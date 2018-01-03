@@ -1,0 +1,5 @@
+/target/
+/build/target/
+/autoProperties-agent/target/
+/autoProperties-common/target/
+/autoProperties-server/target/
