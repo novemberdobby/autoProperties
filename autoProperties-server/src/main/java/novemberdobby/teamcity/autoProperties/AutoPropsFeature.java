@@ -1,9 +1,11 @@
-package novemberdobby.teamcity.autoProperties;
+package novemberdobby.teamcity.autoProperties.server;
 
 import java.util.Map;
 
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
+
+import novemberdobby.teamcity.autoProperties.common.AutoPropsConstants;
 
 public class AutoPropsFeature extends BuildFeature {
 
@@ -39,6 +41,6 @@ public class AutoPropsFeature extends BuildFeature {
     
     @Override
     public String describeParameters(Map<java.lang.String,java.lang.String> params) {
-        return AutoPropsConstants.FEATURE_PARAMS_DESC;
+        return AutoPropsConstants.FEATURE_PARAMS_DESC; //TODO AutoPropsUtil.getParameters
     }
 }
