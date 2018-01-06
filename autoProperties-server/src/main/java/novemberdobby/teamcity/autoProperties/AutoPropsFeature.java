@@ -1,6 +1,7 @@
 package novemberdobby.teamcity.autoProperties.server;
 
 import java.util.Map;
+import java.util.HashMap;
 
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -42,5 +43,15 @@ public class AutoPropsFeature extends BuildFeature {
     @Override
     public String describeParameters(Map<java.lang.String,java.lang.String> params) {
         return AutoPropsConstants.FEATURE_PARAMS_DESC; //TODO AutoPropsUtil.getParameters
+    }
+    
+    @Override
+    public Map<String, String> getDefaultParameters() {
+        
+        //all other props are empty strings by default
+        HashMap<String, String> result = new HashMap<String, String>();
+        result.put(AutoPropsConstants.SETTING_TYPE, "auto");
+        
+        return result;
     }
 }

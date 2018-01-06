@@ -3,12 +3,12 @@
   <info>
     <name>autoProperties</name>
     <display-name>Auto Properties</display-name>
-    <version>0.1</version>
+    <version>0.2</version>
     <description>Set build parameters according to trigger</description>
     <download-url>-</download-url>
     <email>novemberdobby@gmail.com</email>
     <vendor>
-      <name>novemberdobby</name>
+      <name>Jon Philpot</name>
       <url>www.novemberdobby.co.uk</url>
     </vendor>
   </info>

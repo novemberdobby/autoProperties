@@ -31,6 +31,7 @@ public class AutoPropsUtil {
     //should we update any parameters, based on how this build was triggered?
     public static boolean shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
+        String customPattern = featureParams.get(AutoPropsConstants.SETTING_TYPE);
         
         String triggeredBy = buildParams.get("teamcity.build.triggeredBy");
         String triggeredByUser = buildParams.get("teamcity.build.triggeredBy.username");
@@ -45,7 +46,10 @@ public class AutoPropsUtil {
                 return byUser;
                 
             case "custom":
-                return false;
+                //we've already checked it's a valid regex
+                Pattern ptn = Pattern.compile(customPattern, Pattern.CASE_INSENSITIVE);
+                Matcher mtch = ptn.matcher(triggeredBy);
+                return mtch.matches();
         }
         
         return false;
