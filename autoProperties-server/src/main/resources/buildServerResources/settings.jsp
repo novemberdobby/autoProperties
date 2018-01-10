@@ -8,6 +8,7 @@
 <c:set var="params_list" value="<%=AutoPropsConstants.SETTING_PARAMS%>"/>
 <c:set var="trig_type" value="<%=AutoPropsConstants.SETTING_TYPE%>"/>
 <c:set var="trig_pattern" value="<%=AutoPropsConstants.SETTING_CUSTOM_PATTERN%>"/>
+<c:set var="test_url" value="<%=AutoPropsConstants.TESTING_URL%>"/>
 <c:set var="trigger_type_in" value="${empty propertiesBean.properties[trig_type] ? propertiesBean.defaultProperties[trig_type] : propertiesBean.properties[trig_type]}"/>
 
 <tr class="noBorder">
@@ -36,11 +37,13 @@
 <tr class="noBorder" id="autoprops.type.custom.pattern" style="display: none">
   <th>Pattern:</th>
   <td>
-    <props:textProperty name="${trig_pattern}" value="" className="disableBuildTypeParams"/>
+    <props:textProperty name="${trig_pattern}" value="" className="disableBuildTypeParams" onkeyup="BS.AutoProps.onRegexChange()"/>
     <span class="smallNote" >
       Match trigger text against this pattern (case insensitive, not anchored)
       <br/>
     </span>
+    <span class="smallNote" id="autoprops.type.custom.badpattern" style="display: none; color:#ff0000; font-family: monospace; font-size: 14px; white-space: pre;" />
+    
   </td>
 </tr>
 
@@ -78,8 +81,39 @@
       }
       
       BS.MultilineProperties.updateVisible();
+    },
+    
+    onRegexChange: function() {
+      var patternElem = $('${trig_pattern}');
+      var pattern = patternElem.value;
+      var bpElem = $('autoprops.type.custom.badpattern');
+      
+      if(pattern != null)
+      {
+        var params = {};
+        params['action'] = 'checkPattern';
+        params['pattern'] = pattern;
+        
+        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
+            method: "GET",
+            parameters: params,
+            onComplete: function(transport)
+            {
+              if(transport.responseText)
+              {
+                BS.Util.show(bpElem.id);
+                bpElem.textContent = 'Error: ' + transport.responseText;
+              }
+              else
+              {
+                BS.Util.hide(bpElem.id);
+              }
+            },
+        });
+      }
     }
   };
   
   BS.AutoProps.onTriggerTypeChange();
+  BS.AutoProps.onRegexChange();
 </script>

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.regex.Matcher;
 
 public class AutoPropsUtil {
@@ -31,7 +32,7 @@ public class AutoPropsUtil {
     //should we update any parameters, based on how this build was triggered?
     public static boolean shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
-        String customPattern = featureParams.get(AutoPropsConstants.SETTING_TYPE);
+        String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
         
         String triggeredBy = buildParams.get("teamcity.build.triggeredBy");
         String triggeredByUser = buildParams.get("teamcity.build.triggeredBy.username");
@@ -46,12 +47,26 @@ public class AutoPropsUtil {
                 return byUser;
                 
             case "custom":
-                //we've already checked it's a valid regex
-                Pattern ptn = Pattern.compile(customPattern, Pattern.CASE_INSENSITIVE);
+                //we've checked it's valid on set, but just in case...
+                if(!isValidRegex(customPattern)) {
+                    return false;
+                }
+                
+                Pattern ptn = Pattern.compile(customPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
                 Matcher mtch = ptn.matcher(triggeredBy);
                 return mtch.matches();
         }
         
         return false;
+    }
+    
+    public static boolean isValidRegex(String pattern) {
+        try {
+            Pattern ptn = Pattern.compile(pattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
+            return true;
+        }
+        catch(PatternSyntaxException ex) {
+            return false;
+        }
     }
 }
