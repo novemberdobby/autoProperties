@@ -9,6 +9,7 @@ import jetbrains.buildServer.agent.AgentLifeCycleAdapter;
 import jetbrains.buildServer.agent.AgentLifeCycleListener;
 import jetbrains.buildServer.agent.AgentRunningBuild;
 import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.agent.Constants;
 import jetbrains.buildServer.parameters.ValueResolver;
 import jetbrains.buildServer.util.EventDispatcher;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
@@ -48,8 +49,16 @@ public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
                     for(Entry<String, String> entry : toSet.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-                        build.addSharedConfigParameter(key, value); //will update existing variables
                         log.message(String.format("%s => %s", key, value));
+                        
+                        if(key.startsWith(Constants.ENV_PREFIX)) {
+                            build.addSharedEnvironmentVariable(key.substring(Constants.ENV_PREFIX.length()), value);
+                        } else if(key.startsWith(Constants.SYSTEM_PREFIX)) {
+                            build.addSharedSystemProperty(key.substring(Constants.SYSTEM_PREFIX.length()), value);
+                        } else {
+                            build.addSharedConfigParameter(key, value);
+                        }
+                        
                     }
                     
                     log.activityFinished(blockMsg, "agent");

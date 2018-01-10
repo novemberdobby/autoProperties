@@ -36,7 +36,7 @@ public class AutoPropsUtil {
         
         String triggeredBy = buildParams.get("teamcity.build.triggeredBy");
         String triggeredByUser = buildParams.get("teamcity.build.triggeredBy.username");
-        boolean byUser = triggeredByUser != null && triggeredByUser.length() > 0;
+        boolean byUser = triggeredByUser != null;
         
         switch(trigType) {
             
