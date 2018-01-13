@@ -11,6 +11,9 @@
 <c:set var="test_url" value="<%=AutoPropsConstants.TESTING_URL%>"/>
 <c:set var="trigger_type_in" value="${empty propertiesBean.properties[trig_type] ? propertiesBean.defaultProperties[trig_type] : propertiesBean.properties[trig_type]}"/>
 
+<%-- TODO this is probably provided in some other correct way without substringing --%>
+<c:set var='buildTypeId' value='<%= request.getParameter("id") %>'/>
+
 <tr class="noBorder">
   <th>Set properties:</th>
   <td>
@@ -52,6 +55,14 @@
   <td>
     <c:set var="text">Newline delimited list of <strong>name => value</strong> parameters to set<br/></c:set>
     <props:multilineProperty name="${params_list}" rows="5" cols="70" linkTitle="Edit parameters" note="${text}"/>
+    <div id="autoprops.params.missing" style="display: none" class="headerNote">
+      <span class="smallNote" >The following parameters don't exist in this build type:</span>
+      <span class="smallNote" id="autoprops.params.missing.list" style="color:#ff0000; white-space: pre; font-weight: bold"></span>
+      <span class="smallNote" >
+        <i>Missing parameters will still be set, but don't currently appear to be referenced.
+           Environment variables are not checked as they can be accessed without the need for parameter substitution.</i>
+      </span>
+    </div>
   </td>
 </tr>
 
@@ -60,6 +71,7 @@
   //TODO: validate pattern on save
   //TODO: warn of nonexistent variables?
   BS.AutoProps = {
+    
     onTriggerTypeChange: function() {
       var typeElem = $('${trig_type}');
       var typeValue = typeElem.options[typeElem.selectedIndex].value;
@@ -86,34 +98,61 @@
     onRegexChange: function() {
       var patternElem = $('${trig_pattern}');
       var pattern = patternElem.value;
-      var bpElem = $('autoprops.type.custom.badpattern');
+      var tgtElem = $('autoprops.type.custom.badpattern');
       
       if(pattern != null)
       {
-        var params = {};
-        params['action'] = 'checkPattern';
-        params['pattern'] = pattern;
-        
         BS.ajaxRequest(window['base_uri'] + '${test_url}', {
-            method: "GET",
-            parameters: params,
-            onComplete: function(transport)
+          method: "GET",
+          parameters: { 'action': 'checkPattern', 'pattern': pattern },
+          onComplete: function(transport)
+          {
+            if(transport.responseText)
             {
-              if(transport.responseText)
-              {
-                BS.Util.show(bpElem.id);
-                bpElem.textContent = 'Error: ' + transport.responseText;
-              }
-              else
-              {
-                BS.Util.hide(bpElem.id);
-              }
-            },
+              BS.Util.show(tgtElem.id);
+              tgtElem.textContent = 'Error: ' + transport.responseText;
+            }
+            else
+            {
+              BS.Util.hide(tgtElem.id);
+            }
+          },
+        });
+      }
+    },
+    
+    onParametersChange: function() {
+      var parmElem = $('${params_list}');
+      var props = parmElem.value;
+      var tgtElem = $('autoprops.params.missing');
+      var tgtElemText = $('autoprops.params.missing.list');
+      
+      if(props != null)
+      {
+        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
+          method: "GET",
+          parameters: { 'action': 'checkMissingProps', 'buildTypeId': '${buildTypeId}', 'props': props },
+          onComplete: function(transport)
+          {
+            if(transport.responseText)
+            {
+              BS.Util.show(tgtElem.id);
+              tgtElemText.textContent = transport.responseText;
+            }
+            else
+            {
+              BS.Util.hide(tgtElem.id);
+            }
+          },
         });
       }
     }
   };
   
+  //multilineProperty only supports onkeydown, so set this directly on the textarea it hosts
+  $('${params_list}')["onkeyup"] = BS.AutoProps.onParametersChange;
+  
   BS.AutoProps.onTriggerTypeChange();
   BS.AutoProps.onRegexChange();
+  BS.AutoProps.onParametersChange();
 </script>

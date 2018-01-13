@@ -1,22 +1,27 @@
 package novemberdobby.teamcity.autoProperties.common;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.regex.Matcher;
+import java.util.stream.Stream;
 
 public class AutoPropsUtil {
     
-    //transform the feature's parameters into a list of params to set for a build
     public static Map<String, String> getParameters(Map<String, String> featureParams) {
-        Map<String, String> result = new HashMap<String, String>();
+        return getParametersFromString(featureParams.get(AutoPropsConstants.SETTING_PARAMS));
+    }
+    
+    //transform the feature's parameters into a list of params to set for a build
+    private static Map<String, String> getParametersFromString(String input) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
         
-        if(featureParams.containsKey(AutoPropsConstants.SETTING_PARAMS)) {
-            String list = featureParams.get(AutoPropsConstants.SETTING_PARAMS);
-            List<String> params = Arrays.asList(list.split("[\n\r]"));
+        if(input != null) {
+            List<String> params = Arrays.asList(input.split("[\n\r]"));
             
             for(String param : params) {
                 Matcher mtch = AutoPropsConstants.PROP_MATCH.matcher(param);
@@ -68,5 +73,20 @@ public class AutoPropsUtil {
         catch(PatternSyntaxException ex) {
             return false;
         }
+    }
+    
+    public static List<String> getMissingParameters(Map<String, String> buildTypeParams, String input, String... excludePrefixes) {
+        List<String> result = new ArrayList<String>();
+        Map<String, String> params = getParametersFromString(input);
+        
+        for(Map.Entry<String, String> testParam : params.entrySet()) {
+            
+            String key = testParam.getKey();
+            if(!Stream.of(excludePrefixes).anyMatch(ex -> key.startsWith(ex)) && !buildTypeParams.containsKey(key)) {
+                result.add(key);
+            }
+        }
+        
+        return result;
     }
 }
