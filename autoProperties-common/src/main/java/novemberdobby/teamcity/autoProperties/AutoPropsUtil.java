@@ -34,14 +34,13 @@ public class AutoPropsUtil {
         return result;
     }
     
-    //should we update any parameters, based on how this build was triggered?
+    //should we update any parameters?
     public static boolean shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
         String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
         
-        String triggeredBy = buildParams.get("teamcity.build.triggeredBy");
-        String triggeredByUser = buildParams.get("teamcity.build.triggeredBy.username");
-        boolean byUser = triggeredByUser != null;
+        String param = buildParams.get(featureParams.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE));
+        boolean byUser = buildParams.get("teamcity.build.triggeredBy.username") != null;
         
         switch(trigType) {
             
@@ -57,8 +56,12 @@ public class AutoPropsUtil {
                     return false;
                 }
                 
+                if(param == null) {
+                    return false;
+                }
+                
                 Pattern ptn = Pattern.compile(customPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
-                Matcher mtch = ptn.matcher(triggeredBy);
+                Matcher mtch = ptn.matcher(param);
                 return mtch.matches();
         }
         
@@ -88,5 +91,15 @@ public class AutoPropsUtil {
         }
         
         return result;
+    }
+    
+    public static boolean testOnBuild(Map<String, String> buildParams, String pattern) {
+        
+        //mock up a build feature's options
+        Map<String, String> featureParams = new LinkedHashMap<String, String>();
+        featureParams.put(AutoPropsConstants.SETTING_TYPE, "custom");
+        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_PATTERN, pattern);
+        
+        return shouldSet(featureParams, buildParams);
     }
 }

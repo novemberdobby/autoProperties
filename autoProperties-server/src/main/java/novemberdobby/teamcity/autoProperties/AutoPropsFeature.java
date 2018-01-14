@@ -52,6 +52,10 @@ public class AutoPropsFeature extends BuildFeature {
         HashMap<String, String> result = new HashMap<String, String>();
         result.put(AutoPropsConstants.SETTING_TYPE, "auto");
         
+        //this is the var we inspect for determining whether the build was automatically or manually triggered,
+        //people might want to vary things based on it so use it as the default
+        result.put(AutoPropsConstants.SETTING_CUSTOM_VARIABLE, "teamcity.build.triggeredBy");
+        
         return result;
     }
 }
