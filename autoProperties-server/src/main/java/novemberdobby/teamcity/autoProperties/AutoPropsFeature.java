@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.springframework.web.util.HtmlUtils;
 
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.InvalidProperty;
@@ -15,6 +16,7 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.log.Loggers;
 
 import novemberdobby.teamcity.autoProperties.common.AutoPropsConstants;
+import novemberdobby.teamcity.autoProperties.common.AutoPropsUtil;
 
 public class AutoPropsFeature extends BuildFeature {
 
@@ -48,7 +50,38 @@ public class AutoPropsFeature extends BuildFeature {
     
     @Override
     public String describeParameters(Map<java.lang.String,java.lang.String> params) {
-        return AutoPropsConstants.FEATURE_PARAMS_DESC; //TODO AutoPropsUtil.getParameters
+        String type = params.get(AutoPropsConstants.SETTING_TYPE);
+        String typeStr = "unknown";
+        
+        switch(type) {
+            
+            case "auto":
+                typeStr = "automatically triggered builds";
+                break;
+            
+            case "manual":
+                typeStr = "manually triggered builds";
+                break;
+                
+            case "custom":
+                String varName = params.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
+                String varMatch = params.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+                
+                //let's not allow people to inject HTML =]
+                typeStr = HtmlUtils.htmlEscape(String.format("builds when parameter \"%s\" matches: %s", varName, varMatch));
+                break;
+        }
+        
+        Map<String, String> toSet = AutoPropsUtil.getParameters(params);
+        StringBuilder sb = new StringBuilder();
+        for(Entry<String, String> var : toSet.entrySet()) {
+            sb.append("<br>");
+            sb.append(HtmlUtils.htmlEscape(var.getKey()));
+            sb.append(HtmlUtils.htmlEscape(" => "));
+            sb.append(HtmlUtils.htmlEscape(var.getValue()));
+        }
+        
+        return String.format("Set %d parameter%s on %s%s", toSet.size(), toSet.size() == 1 ? "" : "s", typeStr, sb.toString());
     }
     
     @Override
@@ -56,7 +89,7 @@ public class AutoPropsFeature extends BuildFeature {
         
         //all other props are empty strings by default
         HashMap<String, String> result = new HashMap<String, String>();
-        result.put(AutoPropsConstants.SETTING_TYPE, "auto");
+        result.put(AutoPropsConstants.SETTING_TYPE, AutoPropsConstants.SETTING_TYPE_DEFAULT);
         
         //this is the var we inspect for determining whether the build was automatically or manually triggered,
         //people might want to vary things based on it so use it as the default
@@ -108,6 +141,16 @@ public class AutoPropsFeature extends BuildFeature {
                 }
                 //
             }
+            
+            //actual params
+            String params = input.get(AutoPropsConstants.SETTING_PARAMS);
+            
+            if(params == null || params.length() == 0) { //nothing there
+                result.add(new InvalidProperty(AutoPropsConstants.SETTING_PARAMS, "Please define one or more parameters to set"));
+                
+            }
+            //
+            
             
             return result;
         }

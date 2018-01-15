@@ -60,9 +60,9 @@
   <th>Parameters to set:</th>
   <td>
     <c:set var="text">Newline delimited list of <strong>name => value</strong> parameters to set<br/></c:set>
-    <props:multilineProperty name="${params_list}" rows="5" cols="70" linkTitle="Edit" note="${text}"/>
+    <props:multilineProperty name="${params_list}" rows="5" cols="70" linkTitle="" expanded="true" note="${text}"/>
     <div id="autoprops.params.missing" style="display: none" class="headerNote">
-      <span class="smallNote" >The following parameters don't exist in this build type:</span>
+      <span class="smallNote" >The following target parameters don't exist in this build type:</span>
       <span class="smallNote" id="autoprops.params.missing.list" style="color:#ff0000; white-space: pre"></span>
       <span class="smallNote" >
         <i>Missing parameters will still be set, but don't currently appear to be referenced.
