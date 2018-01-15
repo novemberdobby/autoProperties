@@ -39,8 +39,8 @@
 <tr class="noBorder" id="autoprops.type.custom.variable" style="display: none">
   <th>Variable:</th>
   <td>
-    <props:textProperty name="${trig_variable}" className="disableBuildTypeParams" onkeyup="BS.AutoProps.onVariableChange()"/>
-    <span class="smallNote" id="autoprops.type.custom.variable.bad" style="display: none; color:#ff0000"></span>
+    <props:textProperty name="${trig_variable}" className="disableBuildTypeParams"/>
+    <span class="error" id="error_${trig_variable}"></span>
   </td>
 </tr>
 
@@ -48,11 +48,11 @@
 <tr class="noBorder" id="autoprops.type.custom.pattern" style="display: none">
   <th>Pattern:</th>
   <td>
-    <props:textProperty name="${trig_pattern}" className="disableBuildTypeParams" onkeyup="BS.AutoProps.onRegexChange()"/>
+    <props:textProperty name="${trig_pattern}" className="disableBuildTypeParams"/>
     <span class="smallNote" >
       Match trigger text against this pattern (case insensitive, not anchored)
     </span>
-    <span class="smallNote" id="autoprops.type.custom.badpattern" style="display: none; color:#ff0000; font-family: monospace; font-size: 14px; white-space: pre;" />
+    <span class="error" id="error_${trig_pattern}" style="font-family: monospace; font-size: 14px; white-space: pre;" />
   </td>
 </tr>
 
@@ -74,8 +74,6 @@
 
 <script type="text/javascript">
 
-  //TODO: validate pattern on save
-  //TODO: warn of nonexistent variables?
   BS.AutoProps = {
     
     onTriggerTypeChange: function() {
@@ -97,33 +95,8 @@
       BS.MultilineProperties.updateVisible();
     },
     
-    onRegexChange: function() {
-      var patternElem = $('${trig_pattern}');
-      var pattern = patternElem.value;
-      var tgtElem = $('autoprops.type.custom.badpattern');
-      
-      if(pattern != null)
-      {
-        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
-          method: "GET",
-          parameters: { 'action': 'checkPattern', 'pattern': pattern },
-          onComplete: function(transport)
-          {
-            if(transport.responseText)
-            {
-              BS.Util.show(tgtElem.id);
-              tgtElem.textContent = 'Error: ' + transport.responseText;
-            }
-            else
-            {
-              BS.Util.hide(tgtElem.id);
-            }
-          },
-        });
-      }
-    },
-    
     onParametersChange: function() {
+      //run our parameter checks in here, as it's only a warning and shouldn't fail validation in the PropertiesProcessor
       var parmElem = $('${params_list}');
       var props = parmElem.value;
       var tgtElem = $('autoprops.params.missing');
@@ -131,53 +104,23 @@
       
       if(props != null)
       {
-        var transport = BS.AutoProps.testExistence(props);
-        if(transport.responseText)
-        {
-          BS.Util.show(tgtElem.id);
-          tgtElemText.textContent = transport.responseText;
-        }
-        else
-        {
-          BS.Util.hide(tgtElem.id);
-        }
+        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
+          method: "GET",
+          parameters: { 'action': 'checkMissingProps', 'buildTypeId': '${buildTypeId}', 'props': props },
+          onComplete: function(transport)
+          {
+            if(transport && transport.responseText)
+            {
+              BS.Util.show(tgtElem.id);
+              tgtElemText.textContent = transport.responseText;
+            }
+            else
+            {
+              BS.Util.hide(tgtElem.id);
+            }
+          }
+        });
       }
-    },
-    
-    onVariableChange: function() {
-      var varElem = $('${trig_variable}');
-      var varName = varElem.value;
-      var bad = $('autoprops.type.custom.variable.bad');
-      
-      if(varName == null || varName.length == 0)
-      {
-        bad.textContent = "Please define a source parameter name";
-        BS.Util.show(bad.id);
-      }
-      else if(varName.indexOf('%') >= 0) //they're trying to reference another value
-      {
-        bad.textContent = "To prevent incorrect resolution, parameter name should not include references";
-        BS.Util.show(bad.id);
-      }
-      else
-      {
-        BS.Util.hide(bad.id);
-      }
-    },
-    
-    testExistence: function(props) {
-      var t = null;
-      BS.ajaxRequest(window['base_uri'] + '${test_url}', {
-        method: "GET",
-        asynchronous: false,
-        parameters: { 'action': 'checkMissingProps', 'buildTypeId': '${buildTypeId}', 'props': props },
-        onComplete: function(transport)
-        {
-          t = transport;
-        }
-      });
-      
-      return t;
     },
   };
   
@@ -185,7 +128,5 @@
   $('${params_list}')["onkeyup"] = BS.AutoProps.onParametersChange;
   
   BS.AutoProps.onTriggerTypeChange();
-  BS.AutoProps.onVariableChange();
-  BS.AutoProps.onRegexChange();
   BS.AutoProps.onParametersChange();
 </script>

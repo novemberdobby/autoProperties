@@ -2,8 +2,6 @@ package novemberdobby.teamcity.autoProperties.server;
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.net.URLDecoder;
 
 import org.springframework.util.MultiValueMap;
@@ -18,7 +16,6 @@ import jetbrains.buildServer.serverSide.SProject;
 
 import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.controllers.BaseController;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import jetbrains.buildServer.web.util.SessionUser;
@@ -67,20 +64,10 @@ public class AutoPropsTest extends BaseController {
         MultiValueMap<String, String> params = UriComponentsBuilder.fromUriString(url.toString()).build().getQueryParams();
         
         String operation = getSingle(params, "action");
-        String pattern = getSingle(params, "pattern");
         
         String result = "";
         switch(operation)
         {
-            case "checkPattern":
-                try {
-                    Pattern p = Pattern.compile(pattern); //TODO: is an empty one something we should allow?
-                }
-                catch(PatternSyntaxException ex) {
-                    result = ex.getMessage().toString();
-                }
-                break;
-                
             case "checkMissingProps":
                 String props = getSingle(params, "props");
                 
