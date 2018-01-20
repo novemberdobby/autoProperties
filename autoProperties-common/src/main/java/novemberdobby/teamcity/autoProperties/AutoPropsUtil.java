@@ -62,7 +62,7 @@ public class AutoPropsUtil {
                 
                 Pattern ptn = Pattern.compile(customPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
                 Matcher mtch = ptn.matcher(param);
-                return mtch.matches();
+                return mtch.find();
         }
         
         return false;
@@ -93,12 +93,13 @@ public class AutoPropsUtil {
         return result;
     }
     
-    public static boolean testOnBuild(Map<String, String> buildParams, String pattern) {
+    public static boolean testOnBuild(String varType, String varName, String varPattern, Map<String, String> buildParams) {
         
         //mock up a build feature's options
         Map<String, String> featureParams = new LinkedHashMap<String, String>();
-        featureParams.put(AutoPropsConstants.SETTING_TYPE, "custom");
-        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_PATTERN, pattern);
+        featureParams.put(AutoPropsConstants.SETTING_TYPE, varType);
+        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_VARIABLE, varName);
+        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_PATTERN, varPattern);
         
         return shouldSet(featureParams, buildParams);
     }

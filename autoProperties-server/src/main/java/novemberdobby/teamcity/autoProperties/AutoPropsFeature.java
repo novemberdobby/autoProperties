@@ -26,8 +26,6 @@ public class AutoPropsFeature extends BuildFeature {
         m_editUrl = descriptor.getPluginResourcesPath(AutoPropsConstants.FEATURE_SETTINGS_JSP);
     }
     
-    //TODO: check against triggered build ('#x would not trigger this with the current settings' etc)
-    
     @Override
     public String getDisplayName() {
         return AutoPropsConstants.FEATURE_DISPLAY_NAME;
