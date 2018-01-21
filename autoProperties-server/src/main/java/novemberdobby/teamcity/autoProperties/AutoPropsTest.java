@@ -119,7 +119,7 @@ public class AutoPropsTest extends BaseController {
                 if(buildType != null) {
                     
                     List<SFinishedBuild> history = buildType.getHistory();
-                    int numBuilds = Math.min(history.size() - 1, 50);
+                    int numBuilds = Math.min(history.size() - 1, 30);
                     for(int i = numBuilds; i >= 0; i--) {
                         
                         SFinishedBuild build = history.get(i);

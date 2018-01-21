@@ -68,32 +68,43 @@
 </tr>
 
 <style type="text/css">
-#testOnBuildResults tbody td {
+#testOnBuildResults tbody tr td, #testOnBuildResultsKey tbody tr td {
+  border: 1px solid #ccc;
+}
+
+#testOnBuildResults th {
   border: 1px solid #ccc;
   padding: 3px;
+  background: #f5f5f5;
 }
 
 .qualify {
-  color: #2dc300;
-  font-weight: bold;
+  background: #ceffbf;
+  padding: 3px;
 }
 
 .noqualify {
-  color:#bbbbbb;
+  background: #ececec;
+  padding: 3px;
 }
 </style>
 
 <tr class="noBorder">
   <td colspan="2">
-    <div><forms:button id="openTestDialogBtn" onclick="BS.AutoProps.openTestDialog()" className="btn">Test on previous builds</forms:button></div>
-    <div><forms:saving savingTitle="Getting builds..." id="getBuildsProgress"/></div>
+    <forms:button id="openTestDialogBtn" onclick="BS.AutoProps.openTestDialog()" className="btn">Test on previous builds</forms:button>
+    <forms:saving id="getBuildsProgress"/>
     
     <bs:dialog dialogId="testOnBuildDialog" title="Previous builds" closeCommand="BS.AutoProps.TestOnBuildDialog.close()">
       <div id="testOnBuildResultsDiv">
-        <div>Showing last 50 builds. Key:</div>
-        <div class="qualify">Build qualifies</div>
-        <div class="noqualify">Build does not qualify</div>
-        <table id="testOnBuildResults">
+        <span id="numQualifyBuilds"></span>
+        <table id="testOnBuildResultsKey" cellpadding="4">
+          <tbody>
+            <tr><td class="qualify">Build qualifies</td></tr>
+            <tr><td class="noqualify">Build doesn't qualify</td></tr>
+          </tbody>
+        </table>
+        <br/>
+        <table id="testOnBuildResults" cellpadding="4">
           <thead>
             <tr>
               <th>Number</th>
@@ -101,9 +112,6 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-          
-          </tbody>
         </table>
       </div>
       <div class="popupSaveButtonsBlock">
@@ -151,7 +159,7 @@
           parameters: { 'action': 'checkMissingProps', 'buildTypeId': '${buildTypeId}', 'props': props },
           onComplete: function(transport)
           {
-            if(transport && transport.responseText)
+            if(transport && transport.status == 200 && transport.responseText)
             {
               BS.Util.show(tgtElem.id);
               tgtElemText.textContent = transport.responseText;
@@ -176,6 +184,7 @@
           
           var body = $('testOnBuildResults').lastChild;
           var newBody = document.createElement('tbody');
+          var total = 0;
           
           for (var i = 0; i < builds.length; i++) {
             var row = document.createElement("tr");
@@ -205,8 +214,11 @@
             else
             {
               row.className = "qualify";
+              total++;
             }
           }
+          
+          $('numQualifyBuilds').innerText = total + " of the last " + builds.length + " builds " + (total == 1 ? "qualifies" : "qualify") + ". Key:";
           
           body.parentNode.replaceChild(newBody, body);
         }
@@ -227,9 +239,12 @@
             '${trig_pattern}': $('${trig_pattern}').value
           },
           onComplete: function(transport) {
-            BS.AutoProps.TestOnBuildDialog.init(transport);
-            BS.AutoProps.TestOnBuildDialog.showCentered();
-            BS.Util.hide('getBuildsProgress');
+            if(transport && transport.status == 200)
+            {
+              BS.AutoProps.TestOnBuildDialog.init(transport);
+              BS.AutoProps.TestOnBuildDialog.showCentered();
+              BS.Util.hide('getBuildsProgress');
+            }
           }
       });
     }
