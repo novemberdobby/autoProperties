@@ -12,7 +12,6 @@
 <c:set var="trig_variable" value="<%=AutoPropsConstants.SETTING_CUSTOM_VARIABLE%>"/>
 <c:set var="trig_pattern" value="<%=AutoPropsConstants.SETTING_CUSTOM_PATTERN%>"/>
 <c:set var="test_url" value="<%=AutoPropsConstants.TESTING_URL%>"/>
-<c:set var="trigger_type_in" value="${empty propertiesBean.properties[trig_type] ? propertiesBean.defaultProperties[trig_type] : propertiesBean.properties[trig_type]}"/>
 
 <%-- TODO this is probably provided in some other correct way without substringing --%>
 <c:set var='buildTypeId' value='<%= request.getParameter("id") %>'/>
@@ -21,20 +20,14 @@
   <th>Set on:</th>
   <td>
     <props:selectProperty name="${trig_type}" onchange="BS.AutoProps.onTriggerTypeChange()">
-      <props:option value="auto" selected="${trigger_type_in eq 'auto'}">Automatic trigger</props:option>
-      <props:option value="manual" selected="${trigger_type_in eq 'manual'}">Manual trigger</props:option>
-      <props:option value="custom" selected="${trigger_type_in eq 'custom'}">Custom</props:option>
+      <props:option value="auto" >Automatic trigger</props:option>
+      <props:option value="manual">Manual trigger</props:option>
+      <props:option value="custom">Custom</props:option>
     </props:selectProperty>
 
-    <span class="smallNote" id="autoprops.type.note.auto" style="${trigger_type_in eq 'auto' ? '' : 'display: none;'}">
-      When build is triggered automatically
-    </span>
-    <span class="smallNote" id="autoprops.type.note.manual" style="${trigger_type_in eq 'manual' ? '' : 'display: none;'}">
-      When build is triggered by a person
-    </span>
-    <span class="smallNote" id="autoprops.type.note.custom" style="${trigger_type_in eq 'custom' ? '' : 'display: none;'}">
-      When a parameter's value matches a regular expression
-    </span>
+    <span class="smallNote" id="autoprops.type.note.auto">When build is triggered automatically</span>
+    <span class="smallNote" id="autoprops.type.note.manual">When build is triggered by a person</span>
+    <span class="smallNote" id="autoprops.type.note.custom">When a parameter's value matches a regular expression</span>
   </td>
 </tr>
 
@@ -217,9 +210,6 @@
           
           body.parentNode.replaceChild(newBody, body);
         }
-      },
-      
-      beforeShow: function() {
       },
     }),
     
