@@ -76,6 +76,7 @@
   border: 1px solid #ccc;
   padding: 3px;
   background: #f5f5f5;
+  text-align: left;
 }
 
 .qualify {
@@ -109,8 +110,8 @@
             <thead>
               <tr>
                 <th>Number</th>
-                <%-- <th>ID</th> --%>
                 <th>Status</th>
+                <th id="variableValue"></th>
               </tr>
             </thead>
           </table>
@@ -180,6 +181,10 @@
         return $('testOnBuildDialog');
       },
       
+      beforeShow: function() {
+        $('testOnBuildDialog').style.width = "900px";
+      },
+      
       init: function(transport) {
         var builds = transport.responseXML.firstChild.getElementsByTagName("build");
         if (builds && builds.length > 0) {
@@ -187,6 +192,7 @@
           var body = $('testOnBuildResults').lastChild;
           var newBody = document.createElement('tbody');
           var total = 0;
+          var showVars = false;
           
           for (var i = 0; i < builds.length; i++) {
             var row = document.createElement("tr");
@@ -197,12 +203,6 @@
             var dNumber = document.createElement("td");
             dNumber.innerHTML = "<a href='/viewLog.html?buildId=" + bId + "'>" + bNumber + "</a>";
             row.appendChild(dNumber);
-            
-            <%--  //don't really need this
-            var dId = document.createElement("td");
-            dId.appendChild(document.createTextNode(bId));
-            row.appendChild(dId);
-            --%>
             
             var bStatus = builds[i].getAttribute("status");
             var dStatus = document.createElement("td");
@@ -218,8 +218,25 @@
               row.className = "qualify";
               total++;
             }
+            
+            var bValue = builds[i].getAttribute("var");
+            if(bValue && bValue.length > 0) {
+              var dValue = document.createElement("td");
+              dValue.appendChild(document.createTextNode(bValue));
+              row.appendChild(dValue);
+              showVars = true;
+            }
           }
           
+          if(showVars)
+          {
+            BS.Util.show('variableValue');
+            $('variableValue').innerText = '"' + $('${trig_variable}').value + '"';
+          }
+          else
+          {
+            BS.Util.hide('variableValue');
+          }
           $('numQualifyBuilds').innerText = total + " of the last " + builds.length + " builds " + (total == 1 ? "qualifies" : "qualify") + ". Key:";
           
           body.parentNode.replaceChild(newBody, body);

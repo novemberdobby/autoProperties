@@ -35,7 +35,7 @@ public class AutoPropsUtil {
     }
     
     //should we update any parameters?
-    public static boolean shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
+    public static SetDecision shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
         String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
         
@@ -45,27 +45,27 @@ public class AutoPropsUtil {
         switch(trigType) {
             
             case "auto":
-                return !byUser;
+                return new SetDecision(!byUser);
             
             case "manual":
-                return byUser;
+                return new SetDecision(byUser);
                 
             case "custom":
                 //we've checked it's valid on set, but just in case...
                 if(!isValidRegex(customPattern)) {
-                    return false;
+                    return new SetDecision(false);
                 }
                 
                 if(param == null) {
-                    return false;
+                    return new SetDecision(false);
                 }
                 
                 Pattern ptn = Pattern.compile(customPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
                 Matcher mtch = ptn.matcher(param);
-                return mtch.find();
+                return new SetDecision(mtch.find(), param);
         }
         
-        return false;
+        return new SetDecision(false);
     }
     
     public static boolean isValidRegex(String pattern) {
@@ -93,7 +93,7 @@ public class AutoPropsUtil {
         return result;
     }
     
-    public static boolean testOnBuild(String varType, String varName, String varPattern, Map<String, String> buildParams) {
+    public static SetDecision testOnBuild(String varType, String varName, String varPattern, Map<String, String> buildParams) {
         
         //mock up a build feature's options
         Map<String, String> featureParams = new LinkedHashMap<String, String>();

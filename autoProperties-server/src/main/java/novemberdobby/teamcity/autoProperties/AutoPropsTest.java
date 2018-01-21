@@ -43,6 +43,7 @@ import org.w3c.dom.Element;
 
 import novemberdobby.teamcity.autoProperties.common.AutoPropsConstants;
 import novemberdobby.teamcity.autoProperties.common.AutoPropsUtil;
+import novemberdobby.teamcity.autoProperties.common.SetDecision;
 
 public class AutoPropsTest extends BaseController {
     
@@ -125,7 +126,7 @@ public class AutoPropsTest extends BaseController {
                         SFinishedBuild build = history.get(i);
                         
                         Map<String, String> buildParams = build.getParametersProvider().getAll();
-                        boolean wouldSet = AutoPropsUtil.testOnBuild(
+                        SetDecision decision = AutoPropsUtil.testOnBuild(
                             getSingle(params, AutoPropsConstants.SETTING_TYPE),
                             getSingle(params, AutoPropsConstants.SETTING_CUSTOM_VARIABLE),
                             getSingle(params, AutoPropsConstants.SETTING_CUSTOM_PATTERN),
@@ -136,8 +137,9 @@ public class AutoPropsTest extends BaseController {
                         
                         eBuild.setAttribute("number", build.getBuildNumber());
                         eBuild.setAttribute("id", Long.toString(build.getBuildId()));
-                        eBuild.setAttribute("status", build.getBuildStatus().getText());
-                        eBuild.setAttribute("set", wouldSet ? "true" : "false");
+                        eBuild.setAttribute("status", build.getStatusDescriptor().getText());
+                        eBuild.setAttribute("set", Boolean.toString(decision.getSet()));
+                        eBuild.setAttribute("var", decision.getMatchedVar() == null ? "" : decision.getMatchedVar());
                     }
                 }
                 

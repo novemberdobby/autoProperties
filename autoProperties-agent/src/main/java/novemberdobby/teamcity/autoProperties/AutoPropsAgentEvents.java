@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import novemberdobby.teamcity.autoProperties.common.AutoPropsConstants;
 import novemberdobby.teamcity.autoProperties.common.AutoPropsUtil;
+import novemberdobby.teamcity.autoProperties.common.SetDecision;
 
 public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
     
@@ -37,9 +38,9 @@ public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
             
             //feature options
             Map<String, String> params = setter.getParameters();
-            boolean proceed = AutoPropsUtil.shouldSet(params, buildParams);
+            SetDecision decision = AutoPropsUtil.shouldSet(params, buildParams);
             
-            if(proceed) {
+            if(decision.getSet()) {
                 Map<String, String> toSet = AutoPropsUtil.getParameters(params);
                 
                 if(toSet != null && toSet.size() > 0) {
