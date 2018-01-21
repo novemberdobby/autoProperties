@@ -104,15 +104,17 @@
           </tbody>
         </table>
         <br/>
-        <table id="testOnBuildResults" cellpadding="4">
-          <thead>
-            <tr>
-              <th>Number</th>
-              <%-- <th>ID</th> --%>
-              <th>Status</th>
-            </tr>
-          </thead>
-        </table>
+        <div style="overflow-y:auto; height:400px">
+          <table id="testOnBuildResults" cellpadding="4">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <%-- <th>ID</th> --%>
+                <th>Status</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
       </div>
       <div class="popupSaveButtonsBlock">
         <forms:cancel label="Close" onclick="BS.AutoProps.TestOnBuildDialog.close()"/>
