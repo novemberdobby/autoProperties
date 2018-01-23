@@ -40,7 +40,7 @@ public class AutoPropsUtil {
         String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
         
         String param = buildParams.get(featureParams.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE));
-        boolean byUser = buildParams.get("teamcity.build.triggeredBy.username") != null;
+        boolean byUser = buildParams.containsKey("teamcity.build.triggeredBy.username");
         
         switch(trigType) {
             

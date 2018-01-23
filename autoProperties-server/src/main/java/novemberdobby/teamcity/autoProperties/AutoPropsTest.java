@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.net.URLDecoder;
 
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.servlet.ModelAndView;
 
 import jetbrains.buildServer.log.Loggers;
@@ -57,29 +55,18 @@ public class AutoPropsTest extends BaseController {
         web.registerController(AutoPropsConstants.TESTING_URL, this);
     }
     
-    //TODO: check inherited build feature
-    
     @Override
     protected ModelAndView doHandle(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response) throws Exception {
         
         ServletOutputStream stream = response.getOutputStream();
-        
-        StringBuffer url = request.getRequestURL();
-        String query = request.getQueryString();
-        if(query != null) {
-            url.append("?");
-            url.append(query);
-        }
         
         SUser user = SessionUser.getUser(request);
         if(user == null) {
             return null;
         }
         
-        MultiValueMap<String, String> params = UriComponentsBuilder.fromUriString(url.toString()).build().getQueryParams();
-        
-        String operation = getSingle(params, "action");
-        String buildTypeId = getSingle(params, "buildTypeId");
+        String operation = request.getParameter("action");
+        String buildTypeId = request.getParameter("buildTypeId");
 
         SBuildType buildType = null;
 
@@ -92,7 +79,7 @@ public class AutoPropsTest extends BaseController {
         switch(operation)
         {
             case "checkMissingProps":
-                String props = getSingle(params, "props");
+                String props = request.getParameter("props");
                 String result = "";
                 
                 if(props.length() > 0) {
@@ -127,9 +114,9 @@ public class AutoPropsTest extends BaseController {
                         
                         Map<String, String> buildParams = build.getParametersProvider().getAll();
                         SetDecision decision = AutoPropsUtil.testOnBuild(
-                            getSingle(params, AutoPropsConstants.SETTING_TYPE),
-                            getSingle(params, AutoPropsConstants.SETTING_CUSTOM_VARIABLE),
-                            getSingle(params, AutoPropsConstants.SETTING_CUSTOM_PATTERN),
+                            request.getParameter(AutoPropsConstants.SETTING_TYPE),
+                            request.getParameter(AutoPropsConstants.SETTING_CUSTOM_VARIABLE),
+                            request.getParameter(AutoPropsConstants.SETTING_CUSTOM_PATTERN),
                             buildParams);
                         
                         Element eBuild = doc.createElement("build");
@@ -153,15 +140,6 @@ public class AutoPropsTest extends BaseController {
         }
         
         return null;
-    }
-    
-    private String getSingle(MultiValueMap<String, String> map, String name) {
-        List<String> val = map.get(name);
-        if(val != null && val.size() == 1) {
-            return URLDecoder.decode(val.get(0)); //js sent it encoded
-        }
-        
-        return "";
     }
     
     //find & return a build config requested by a user, or null if it doesn't exist/they don't have permission

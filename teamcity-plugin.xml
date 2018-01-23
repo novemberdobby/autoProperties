@@ -3,7 +3,7 @@
   <info>
     <name>autoProperties</name>
     <display-name>Auto Properties</display-name>
-    <version>0.2</version>
+    <version>0.3</version>
     <description>Set build parameters according to trigger</description>
     <download-url>-</download-url>
     <email>novemberdobby@gmail.com</email>
