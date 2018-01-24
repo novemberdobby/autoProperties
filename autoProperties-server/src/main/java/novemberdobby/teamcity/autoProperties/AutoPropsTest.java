@@ -1,9 +1,11 @@
 package novemberdobby.teamcity.autoProperties.server;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 import org.springframework.web.servlet.ModelAndView;
 
@@ -80,7 +82,6 @@ public class AutoPropsTest extends BaseController {
         {
             case "checkMissingProps":
                 String props = request.getParameter("props");
-                String result = "";
                 
                 if(props.length() > 0) {
                     if(buildType != null) {
@@ -88,11 +89,10 @@ public class AutoPropsTest extends BaseController {
                         List<String> missing = AutoPropsUtil.getMissingParameters(btParams, props, Constants.ENV_PREFIX);
                         
                         //parameter names can't contain newlines, so use them as a delimiter
-                        result = String.join("\n", missing);
+                        stream.print(String.join("\n", missing));
                     }
                 }
                 
-                stream.print(result);
                 break;
                 
             case "checkBuilds":
@@ -134,12 +134,53 @@ public class AutoPropsTest extends BaseController {
                 Writer out = new StringWriter();
                 tf.transform(new DOMSource(doc), new StreamResult(out));
                 stream.print(out.toString());
-
+                break;
+                
+            case "autoCompleteVar": //should we even be querying this? why can't we just send them once when they open the dialog
+                String varName = request.getParameter("name");
+                if(varName != null && buildType != null) {
+                    
+                    //resulting properties from the last build
+                    Map<String, String> lbParms = null;
+                    List<SFinishedBuild> history = buildType.getHistory();
+                    if(history.size() > 0) {
+                        lbParms = history.get(0).getParametersProvider().getAll();
+                    }
+                    
+                    TreeMap<String, Integer> found = getMatchingProps(varName, buildType.getParameters(), lbParms);
+                    stream.println(varName.length());
+                    
+                    for(Entry<String, Integer> kvp : found.entrySet()) {
+                        stream.println(kvp.getValue() + " " + kvp.getKey());
+                    }
+                }
                 
                 break;
         }
         
         return null;
+    }
+    
+    private TreeMap<String, Integer> getMatchingProps(String search, Map<String, String>... params) {
+        
+        TreeMap<String, Integer> result = new TreeMap<String, Integer>();
+        String find = search.toLowerCase();
+        
+        for(Map<String, String> map : params) {
+            if(map != null) {
+                for(Entry<String, String> param : map.entrySet()) {
+                    String key = param.getKey();
+                    String keyLow = key.toLowerCase();
+                    
+                    Integer index = keyLow.indexOf(find);
+                    if(!result.containsKey(key) && index != -1) {
+                        result.put(key, index);
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
     
     //find & return a build config requested by a user, or null if it doesn't exist/they don't have permission

@@ -27,7 +27,7 @@
 
     <span class="smallNote" id="autoprops.type.note.auto">When build is triggered automatically</span>
     <span class="smallNote" id="autoprops.type.note.manual">When build is triggered by a person</span>
-    <span class="smallNote" id="autoprops.type.note.custom">When a parameter's value matches a regular expression</span>
+    <span class="smallNote" id="autoprops.type.note.custom">When a parameter's value matches a regular expression (on build start)</span>
   </td>
 </tr>
 
@@ -36,6 +36,7 @@
   <td>
     <props:textProperty name="${trig_variable}" className="disableBuildTypeParams"/>
     <span class="error" id="error_${trig_variable}"></span>
+    <ul id="ac_dropdown" style="display: none; overflow-y:auto; max-height:300px; padding-left: 0px" ></ul>
   </td>
 </tr>
 
@@ -87,6 +88,12 @@
 .noqualify {
   background: #ececec;
   padding: 3px;
+}
+
+.listVar {
+  line-height: 200%;
+  color: cornflowerblue;
+  cursor: pointer;
 }
 </style>
 
@@ -174,6 +181,69 @@
           }
         });
       }
+    },
+    
+    onTriggerVariableChange: function() {
+      var varElem = $('${trig_variable}');
+      var varValue = varElem.value;
+      var tgtElem = $('ac_dropdown');
+      
+      if(!varValue || varValue.length == 0)
+      {
+        BS.Util.hide(tgtElem.id);
+      }
+      else
+      {
+        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
+          method: "GET",
+          parameters: { 'action': 'autoCompleteVar', 'buildTypeId': '${buildTypeId}', 'name': varValue },
+          onComplete: function(transport)
+          {
+            BS.Util.hide(tgtElem.id);
+            if(transport && transport.status == 200 && transport.responseText)
+            {
+              tgtElem.innerHTML = "";
+              
+              var items = transport.responseText.split("\n");
+              var len = parseInt(items[0]);
+              for (var i = 1; i < items.length; i++) {
+                var it = items[i];
+                var split = it.split(" ");
+                var startIndex = parseInt(split[0]);
+                var text = it.substring(split[0].length + 1);
+                var end = startIndex + len;
+                if(end <= startIndex) end = startIndex + 1;
+                
+                var match = text.substring(startIndex, end);
+                
+                if(match && match.length > 0)
+                {
+                  tgtElem.innerHTML +=
+                    '<li class="listVar" id="var_' + text + '" onclick="BS.AutoProps.setVar(this)">'
+                    + text.substring(0, startIndex)
+                    + "<b>"
+                    + match
+                    + "</b>"
+                    + text.substring(end)
+                    + '</li>';
+                }
+              }
+              
+              if(items.length > 0)
+              {
+                BS.Util.show(tgtElem.id);
+              }
+            }
+          }
+        });
+      }
+    },
+    
+    setVar: function(sender) {
+      var name = sender.id.substring(4); //var_<X>
+      var varElem = $('${trig_variable}');
+      varElem.value = name;
+      BS.Util.hide('ac_dropdown');
     },
     
     TestOnBuildDialog: OO.extend(BS.AbstractModalDialog, {
@@ -271,6 +341,8 @@
   
   //multilineProperty only supports onkeydown, so set this directly on the textarea it hosts
   $('${params_list}')["onkeyup"] = BS.AutoProps.onParametersChange;
+  $('${trig_variable}')["onkeyup"] = BS.AutoProps.onTriggerVariableChange;
+  $('${trig_variable}')["onclick"] = BS.AutoProps.onTriggerVariableChange;
   
   BS.AutoProps.onTriggerTypeChange();
   BS.AutoProps.onParametersChange();
