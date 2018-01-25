@@ -71,6 +71,8 @@
 <style type="text/css">
 #testOnBuildResults tbody tr td, #testOnBuildResultsKey tbody tr td {
   border: 1px solid #ccc;
+  max-width: 700px;
+  overflow-wrap: break-word;
 }
 
 #testOnBuildResults th {
