@@ -37,7 +37,10 @@ public class AutoPropsUtil {
     //should we update any parameters?
     public static SetDecision shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
+        
         String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+        customPattern = customPattern == null ? "" : customPattern;
+        boolean isEmptyPattern = customPattern.length() == 0;
         
         String param = buildParams.get(featureParams.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE));
         boolean byUser = buildParams.containsKey("teamcity.build.triggeredBy.username");
@@ -51,12 +54,13 @@ public class AutoPropsUtil {
                 return new SetDecision(byUser);
                 
             case "custom":
-                //we've checked it's valid on set, but just in case...
-                if(!isValidRegex(customPattern)) {
-                    return new SetDecision(false);
+                //check for parameter existence
+                if(isEmptyPattern) {
+                    return new SetDecision(param != null);
                 }
                 
-                if(param == null) {
+                //we've checked it's valid on set, but just in case...
+                if(param == null || !isValidRegex(customPattern)) {
                     return new SetDecision(false);
                 }
                 

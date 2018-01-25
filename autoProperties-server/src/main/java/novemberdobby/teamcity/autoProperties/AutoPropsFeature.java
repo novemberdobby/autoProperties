@@ -125,17 +125,14 @@ public class AutoPropsFeature extends BuildFeature {
                 
                 //custom var pattern
                 String varPattern = input.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+                varPattern = varPattern == null ? "" : varPattern;
                 
-                if(varPattern == null || varPattern.length() == 0) { //nothing there
-                    result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_PATTERN, "Please define a regex pattern to match"));
-                    
-                } else { //invalid regex
-                    try {
-                        Pattern compiled = Pattern.compile(varPattern);
-                    }
-                    catch(PatternSyntaxException ex) {
-                        result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_PATTERN, ex.getMessage().toString()));
-                    }
+                //invalid regex
+                try {
+                    Pattern compiled = Pattern.compile(varPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
+                }
+                catch(PatternSyntaxException ex) {
+                    result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_PATTERN, ex.getMessage().toString()));
                 }
                 //
             }

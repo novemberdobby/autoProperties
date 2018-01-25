@@ -46,9 +46,9 @@
   <td>
     <props:textProperty name="${trig_pattern}" className="disableBuildTypeParams"/>
     <span class="smallNote" >
-      Match trigger text against this pattern (case insensitive, not anchored)
+      Match trigger text against this pattern (case insensitive, not anchored). Leave empty to test for parameter existence.
     </span>
-    <span class="error" id="error_${trig_pattern}" style="font-family: monospace; font-size: 14px; white-space: pre;" />
+    <span class="error" id="error_${trig_pattern}" style="font-family: monospace; font-size: 14px; white-space: pre; " /></span>
   </td>
 </tr>
 
@@ -188,61 +188,38 @@
       var varValue = varElem.value;
       var tgtElem = $('ac_dropdown');
       
-      if(!varValue || varValue.length == 0)
-      {
-        BS.Util.hide(tgtElem.id);
-      }
-      else
-      {
-        BS.ajaxRequest(window['base_uri'] + '${test_url}', {
-          method: "GET",
-          parameters: { 'action': 'autoCompleteVar', 'buildTypeId': '${buildTypeId}', 'name': varValue },
-          onComplete: function(transport)
+      BS.ajaxRequest(window['base_uri'] + '${test_url}', {
+        method: "GET",
+        parameters: { 'action': 'autoCompleteVar', 'buildTypeId': '${buildTypeId}', 'name': varValue },
+        onComplete: function(transport)
+        {
+          BS.Util.hide(tgtElem.id);
+          if(transport && transport.status == 200 && transport.responseXML)
           {
-            BS.Util.hide(tgtElem.id);
-            if(transport && transport.status == 200 && transport.responseText)
+            var props = transport.responseXML.firstChild.getElementsByTagName("var");
+            if (props && props.length > 0)
             {
               tgtElem.innerHTML = "";
-              
-              var items = transport.responseText.split("\n");
-              var len = parseInt(items[0]);
-              for (var i = 1; i < items.length; i++) {
-                var it = items[i];
-                var split = it.split(" ");
-                var startIndex = parseInt(split[0]);
-                var text = it.substring(split[0].length + 1);
-                var end = startIndex + len;
-                if(end <= startIndex) end = startIndex + 1;
-                
-                var match = text.substring(startIndex, end);
-                
-                if(match && match.length > 0)
-                {
-                  tgtElem.innerHTML +=
-                    '<li class="listVar" id="var_' + text + '" onclick="BS.AutoProps.setVar(this)">'
-                    + text.substring(0, startIndex)
-                    + "<b>"
-                    + match
-                    + "</b>"
-                    + text.substring(end)
-                    + '</li>';
-                }
+              for (var i = 0; i < props.length; i++)
+              {
+                var sName = props[i].getAttribute("name");
+                var sDisplay = props[i].getAttribute("display");
+                tgtElem.innerHTML += '<li class="listVar" onclick="BS.AutoProps.setVar(\'' + sName + '\')">' + sDisplay + '</li>';
               }
               
-              if(items.length > 0)
+              //don't show the "dropdown" if the only item is what's already in the box
+              if(!(props.length == 1 && props[0].getAttribute("name") == $('${trig_variable}').value))
               {
                 BS.Util.show(tgtElem.id);
               }
             }
           }
-        });
-      }
+        }
+      });
     },
     
     setVar: function(sender) {
-      var name = sender.id.substring(4); //var_<X>
-      var varElem = $('${trig_variable}');
-      varElem.value = name;
+      $('${trig_variable}').value = sender;
       BS.Util.hide('ac_dropdown');
     },
     

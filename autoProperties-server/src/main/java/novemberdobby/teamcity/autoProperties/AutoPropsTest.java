@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.HtmlUtils;
 
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.auth.Permission;
@@ -96,19 +97,14 @@ public class AutoPropsTest extends BaseController {
                 break;
                 
             case "checkBuilds":
-                
-                response.setContentType("application/xml");
-                DocumentBuilder bob = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                Document doc = bob.newDocument();
-                
-                Element root = doc.createElement("root");
-                doc.appendChild(root);
+            {
+                Document doc = makeBaseXml();
                 
                 if(buildType != null) {
                     
                     List<SFinishedBuild> history = buildType.getHistory();
                     int numBuilds = Math.min(history.size() - 1, 30);
-                    for(int i = numBuilds; i >= 0; i--) {
+                    for(int i = 0; i < numBuilds; i++) {
                         
                         SFinishedBuild build = history.get(i);
                         
@@ -120,7 +116,7 @@ public class AutoPropsTest extends BaseController {
                             buildParams);
                         
                         Element eBuild = doc.createElement("build");
-                        root.appendChild(eBuild);
+                        doc.getFirstChild().appendChild(eBuild);
                         
                         eBuild.setAttribute("number", build.getBuildNumber());
                         eBuild.setAttribute("id", Long.toString(build.getBuildId()));
@@ -130,14 +126,15 @@ public class AutoPropsTest extends BaseController {
                     }
                 }
                 
-                Transformer tf = TransformerFactory.newInstance().newTransformer();
-                Writer out = new StringWriter();
-                tf.transform(new DOMSource(doc), new StreamResult(out));
-                stream.print(out.toString());
+                writeXmlToResponse(doc, response);
                 break;
+            }
                 
-            case "autoCompleteVar": //should we even be querying this? why can't we just send them once when they open the dialog
+            case "autoCompleteVar":
+            {
+                Document doc = makeBaseXml();
                 String varName = request.getParameter("name");
+                
                 if(varName != null && buildType != null) {
                     
                     //resulting properties from the last build
@@ -147,23 +144,46 @@ public class AutoPropsTest extends BaseController {
                         lbParms = history.get(0).getParametersProvider().getAll();
                     }
                     
-                    TreeMap<String, Integer> found = getMatchingProps(varName, buildType.getParameters(), lbParms);
-                    stream.println(varName.length());
+                    TreeMap<String, String> found = getMatchingProps(varName, buildType.getParameters(), lbParms);
                     
-                    for(Entry<String, Integer> kvp : found.entrySet()) {
-                        stream.println(kvp.getValue() + " " + kvp.getKey());
+                    for(Entry<String, String> kvp : found.entrySet()) {
+                        Element eVar = doc.createElement("var");
+                        doc.getFirstChild().appendChild(eVar);
+                        eVar.setAttribute("name", kvp.getKey());
+                        eVar.setAttribute("display", kvp.getValue());
                     }
                 }
                 
+                writeXmlToResponse(doc, response);
                 break;
+            }
         }
         
         return null;
     }
     
-    private TreeMap<String, Integer> getMatchingProps(String search, Map<String, String>... params) {
+    private Document makeBaseXml() throws Exception {
+        DocumentBuilder bob = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document doc = bob.newDocument();
         
-        TreeMap<String, Integer> result = new TreeMap<String, Integer>();
+        Element root = doc.createElement("root");
+        doc.appendChild(root);
+        return doc;
+    }
+    
+    private void writeXmlToResponse(Document doc, HttpServletResponse response) throws Exception {
+        response.setContentType("application/xml");
+        
+        Transformer tf = TransformerFactory.newInstance().newTransformer();
+        Writer out = new StringWriter();
+        tf.transform(new DOMSource(doc), new StreamResult(out));
+        
+        response.getOutputStream().print(out.toString());
+    }
+    
+    private TreeMap<String, String> getMatchingProps(String search, Map<String, String>... params) {
+        
+        TreeMap<String, String> result = new TreeMap<String, String>();
         String find = search.toLowerCase();
         
         for(Map<String, String> map : params) {
@@ -171,10 +191,17 @@ public class AutoPropsTest extends BaseController {
                 for(Entry<String, String> param : map.entrySet()) {
                     String key = param.getKey();
                     String keyLow = key.toLowerCase();
+                    Integer len = find.length();
                     
-                    Integer index = keyLow.indexOf(find);
+                    Integer index = len == 0 ? 0 : keyLow.indexOf(find);
                     if(!result.containsKey(key) && index != -1) {
-                        result.put(key, index);
+                        
+                        String name   = HtmlUtils.htmlEscape(key);
+                        String start  = HtmlUtils.htmlEscape(key.substring(0, index));
+                        String middle = HtmlUtils.htmlEscape(key.substring(index, index + len));
+                        String end    = HtmlUtils.htmlEscape(key.substring(index + len));
+                        
+                        result.put(name, start + "<b>" + middle + "</b>" + end);
                     }
                 }
             }
