@@ -24,9 +24,15 @@ public class AutoPropsUtil {
             List<String> params = Arrays.asList(input.split("[\n\r]"));
             
             for(String param : params) {
-                Matcher mtch = AutoPropsConstants.PROP_MATCH.matcher(param);
-                if(mtch.matches()) {
-                    result.put(mtch.group(1), mtch.group(2));
+                final String mark = "=>";
+                int ind = param.indexOf(mark);
+                if(ind > 0) {
+                    String key = param.substring(0, ind).trim();
+                    String value = param.substring(ind + mark.length(), param.length()).trim();
+                    
+                    if(key.length() > 0 && value.length() > 0) {
+                        result.put(key, value);
+                    }
                 }
             }
         }

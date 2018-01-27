@@ -63,18 +63,17 @@ public class AutoPropsTest extends BaseController {
         
         ServletOutputStream stream = response.getOutputStream();
         
+        String operation = request.getParameter("action");
         SUser user = SessionUser.getUser(request);
-        if(user == null) {
+        if(user == null || operation == null) {
             return null;
         }
         
-        String operation = request.getParameter("action");
         String buildTypeId = request.getParameter("buildTypeId");
-
         SBuildType buildType = null;
-
+        
         final String prefix = "buildType:";
-        if(buildTypeId.startsWith(prefix)) {
+        if(buildTypeId != null && buildTypeId.startsWith(prefix)) {
             buildTypeId = buildTypeId.substring(prefix.length());
             buildType = getWithPermission(user, buildTypeId);
         }
@@ -84,7 +83,7 @@ public class AutoPropsTest extends BaseController {
             case "checkMissingProps":
                 String props = request.getParameter("props");
                 
-                if(props.length() > 0) {
+                if(props != null && props.length() > 0) {
                     if(buildType != null) {
                         Map<String, String> btParams = buildType.getParameters();
                         List<String> missing = AutoPropsUtil.getMissingParameters(btParams, props, Constants.ENV_PREFIX);

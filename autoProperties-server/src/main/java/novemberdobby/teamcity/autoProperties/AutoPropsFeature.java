@@ -111,7 +111,7 @@ public class AutoPropsFeature extends BuildFeature {
             String type = input.get(AutoPropsConstants.SETTING_TYPE);
             if(type.equals("custom")) {
                 
-                //custom var name
+                ///custom var name
                 String varName = input.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
                 
                 if(varName == null || varName.length() == 0) { //nothing there
@@ -120,10 +120,10 @@ public class AutoPropsFeature extends BuildFeature {
                 } else if(varName.contains("%")) { //they're trying to reference another value
                     result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_VARIABLE, "To prevent incorrect resolution, parameter name should not include references"));
                 }
-                //
+                ///
                 
                 
-                //custom var pattern
+                ///custom var pattern
                 String varPattern = input.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
                 varPattern = varPattern == null ? "" : varPattern;
                 
@@ -134,17 +134,16 @@ public class AutoPropsFeature extends BuildFeature {
                 catch(PatternSyntaxException ex) {
                     result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_PATTERN, ex.getMessage().toString()));
                 }
-                //
+                ///
             }
             
-            //actual params
-            String params = input.get(AutoPropsConstants.SETTING_PARAMS);
+            ///actual params
+            Map<String, String> params = AutoPropsUtil.getParameters(input);
             
-            if(params == null || params.length() == 0) { //nothing there
+            if(params.size() == 0) { //nothing there
                 result.add(new InvalidProperty(AutoPropsConstants.SETTING_PARAMS, "Please define one or more parameters to set"));
-                
             }
-            //
+            ///
             
             
             return result;
