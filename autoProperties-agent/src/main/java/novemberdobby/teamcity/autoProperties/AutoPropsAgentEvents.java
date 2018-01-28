@@ -34,13 +34,13 @@ public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
         for(AgentBuildFeature setter : setters) {
             
             //need these for the "triggered by" information
-            Map<String, String> buildParams = build.getSharedConfigParameters();
+            Map<String, String> buildParams = build.getSharedBuildParameters().getAllParameters();
             
             //feature options
             Map<String, String> params = setter.getParameters();
             SetDecision decision = AutoPropsUtil.shouldSet(params, buildParams);
             
-            if(decision.getSet()) {
+            if(decision.isValid() && decision.getSet()) {
                 Map<String, String> toSet = AutoPropsUtil.getParameters(params);
                 
                 if(toSet != null && toSet.size() > 0) {
