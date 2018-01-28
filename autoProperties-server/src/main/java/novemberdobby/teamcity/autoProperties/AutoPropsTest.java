@@ -101,6 +101,10 @@ public class AutoPropsTest extends BaseController {
                 
                 if(buildType != null) {
                     
+                    String type = request.getParameter(AutoPropsConstants.SETTING_TYPE);
+                    String var = request.getParameter(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
+                    String pattern = request.getParameter(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+                    
                     List<SFinishedBuild> history = buildType.getHistory();
                     int numBuilds = Math.min(history.size() - 1, 30);
                     for(int i = 0; i < numBuilds; i++) {
@@ -108,11 +112,13 @@ public class AutoPropsTest extends BaseController {
                         SFinishedBuild build = history.get(i);
                         
                         Map<String, String> buildParams = build.getParametersProvider().getAll();
-                        SetDecision decision = AutoPropsUtil.testOnBuild(
-                            request.getParameter(AutoPropsConstants.SETTING_TYPE),
-                            request.getParameter(AutoPropsConstants.SETTING_CUSTOM_VARIABLE),
-                            request.getParameter(AutoPropsConstants.SETTING_CUSTOM_PATTERN),
-                            buildParams);
+                        SetDecision decision = AutoPropsUtil.testOnBuild(type, var, pattern, buildParams);
+                        
+                        if(!decision.isValid()) {
+                            Element eError = doc.createElement("error");
+                            doc.getFirstChild().appendChild(eError);
+                            break;
+                        }
                         
                         Element eBuild = doc.createElement("build");
                         doc.getFirstChild().appendChild(eBuild);

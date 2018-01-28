@@ -66,8 +66,12 @@ public class AutoPropsUtil {
                 }
                 
                 //we've checked it's valid on set, but just in case...
-                if(param == null || !isValidRegex(customPattern)) {
+                if(param == null) {
                     return new SetDecision(false);
+                }
+                
+                if(!isValidRegex(customPattern)) {
+                    return new SetDecision();
                 }
                 
                 Pattern ptn = Pattern.compile(customPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);

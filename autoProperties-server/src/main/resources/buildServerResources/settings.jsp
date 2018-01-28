@@ -118,7 +118,7 @@
           <table id="testOnBuildResults" cellpadding="4">
             <thead>
               <tr>
-                <th>Number</th>
+                <th>Label</th>
                 <th>Status</th>
                 <th id="variableValue"></th>
               </tr>
@@ -307,11 +307,20 @@
             '${trig_pattern}': $('${trig_pattern}').value
           },
           onComplete: function(transport) {
+            BS.Util.hide('getBuildsProgress');
             if(transport && transport.status == 200)
             {
-              BS.AutoProps.TestOnBuildDialog.init(transport);
-              BS.AutoProps.TestOnBuildDialog.showCentered();
-              BS.Util.hide('getBuildsProgress');
+              var error = transport.responseXML.firstChild.getElementsByTagName("error");
+              if(error && error.length > 0)
+              {
+                //prompt a save so the error is shown, there's probably a better way ¯\_(ツ)_/¯
+                $('submitBuildFeatureId').click();
+              }
+              else
+              {
+                BS.AutoProps.TestOnBuildDialog.init(transport);
+                BS.AutoProps.TestOnBuildDialog.showCentered();
+              }
             }
           }
       });
