@@ -30,7 +30,7 @@ Click "Test on previous builds" to check which builds would qualify to have para
 ## Build chains / Dependencies
 When builds are triggered indirectly as part of a dependency chain, they are treated as being triggered in the same way that the "responsible" build was. Use the test functionality to be sure of what will happen in these cases.
 
-:warning: builds that are modified by AutoProperties are not considered to have customised parameters, unless the user specifies some in the Run dialog. This may have unintentional effects on build re-use, see ["Suitable Builds"](https://confluence.jetbrains.com/display/TCD10/Snapshot+Dependencies) in the TeamCity documentation.
+Warning: builds that are modified by AutoProperties are not considered to have customised parameters, unless the user specifies some in the Run dialog. This may have unintentional effects on build re-use, see ["Suitable Builds"](https://confluence.jetbrains.com/display/TCD10/Snapshot+Dependencies) in the TeamCity documentation.
 
 
 ## Building
