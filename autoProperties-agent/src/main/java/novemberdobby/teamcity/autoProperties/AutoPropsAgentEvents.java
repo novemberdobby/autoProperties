@@ -1,6 +1,7 @@
 package novemberdobby.teamcity.autoProperties.agent;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,8 +34,8 @@ public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
         Collection<AgentBuildFeature> setters = build.getBuildFeaturesOfType(AutoPropsConstants.FEATURE_TYPE_ID);
         for(AgentBuildFeature setter : setters) {
             
-            //need these for the "triggered by" information
-            Map<String, String> buildParams = build.getSharedBuildParameters().getAllParameters();
+            Map<String, String> buildParams = new HashMap<String, String>(build.getSharedBuildParameters().getAllParameters());
+            buildParams.putAll(build.getSharedConfigParameters());
             
             //feature options
             Map<String, String> params = setter.getParameters();
