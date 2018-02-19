@@ -68,6 +68,11 @@ public class AutoPropsFeature extends BuildFeature {
                 //let's not allow people to inject HTML =]
                 typeStr = HtmlUtils.htmlEscape(String.format("builds when parameter \"%s\" matches: %s", varName, varMatch));
                 break;
+                
+            case "trigger_type":
+                String trigTypeName = params.get(AutoPropsConstants.SETTING_TRIGGER_TYPE_NAME);
+                typeStr = String.format("builds initiated by '%s' trigger", HtmlUtils.htmlEscape(trigTypeName));
+                break;
         }
         
         Map<String, String> toSet = AutoPropsUtil.getParameters(params);

@@ -41,7 +41,7 @@ public class AutoPropsUtil {
     }
     
     //should we update any parameters?
-    public static SetDecision shouldSet(Map<String, String> featureParams, Map<String, String> buildParams) {
+    public static SetDecision makeDecision(Map<String, String> featureParams, Map<String, String> buildParams, Map<String, String> triggeredByParams) {
         String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
         
         String customPattern = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
@@ -58,6 +58,17 @@ public class AutoPropsUtil {
             
             case "manual":
                 return new SetDecision(byUser);
+                
+            case "trigger_type":
+                String checkAgainst = featureParams.get(AutoPropsConstants.SETTING_TRIGGER_TYPE_NAME);
+                String toCheck;
+                if(triggeredByParams != null) {
+                    toCheck = triggeredByParams.get(AutoPropsConstants.AGENT_FLAG_KEY); //we were called from the server side
+                } else {
+                    toCheck = buildParams.get(AutoPropsConstants.AGENT_FLAG_VAR_NAME); //called from the agent side
+                }
+                
+                return new SetDecision(toCheck != null && checkAgainst != null && toCheck.equalsIgnoreCase(checkAgainst), toCheck);
                 
             case "custom":
                 //check for parameter existence
@@ -105,16 +116,5 @@ public class AutoPropsUtil {
         }
         
         return result;
-    }
-    
-    public static SetDecision testOnBuild(String varType, String varName, String varPattern, Map<String, String> buildParams) {
-        
-        //mock up a build feature's options
-        Map<String, String> featureParams = new LinkedHashMap<String, String>();
-        featureParams.put(AutoPropsConstants.SETTING_TYPE, varType);
-        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_VARIABLE, varName);
-        featureParams.put(AutoPropsConstants.SETTING_CUSTOM_PATTERN, varPattern);
-        
-        return shouldSet(featureParams, buildParams);
     }
 }

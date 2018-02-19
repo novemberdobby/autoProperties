@@ -39,7 +39,7 @@ public class AutoPropsAgentEvents extends AgentLifeCycleAdapter {
             
             //feature options
             Map<String, String> params = setter.getParameters();
-            SetDecision decision = AutoPropsUtil.shouldSet(params, buildParams);
+            SetDecision decision = AutoPropsUtil.makeDecision(params, buildParams, null);
             
             if(decision.isValid() && decision.getSet()) {
                 Map<String, String> toSet = AutoPropsUtil.getParameters(params);

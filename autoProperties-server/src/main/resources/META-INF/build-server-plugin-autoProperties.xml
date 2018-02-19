@@ -5,4 +5,5 @@
        default-autowire="constructor">
   <bean class="novemberdobby.teamcity.autoProperties.server.AutoPropsFeature"/>
   <bean class="novemberdobby.teamcity.autoProperties.server.AutoPropsTest"/>
+  <bean class="novemberdobby.teamcity.autoProperties.server.AutoPropsParamProvider"/>
 </beans>

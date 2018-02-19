@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.HtmlUtils;
@@ -17,9 +19,11 @@ import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SFinishedBuild;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.TriggeredBy;
 
 import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.controllers.BaseController;
+import jetbrains.buildServer.util.ItemProcessor;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import jetbrains.buildServer.web.util.SessionUser;
@@ -101,18 +105,16 @@ public class AutoPropsTest extends BaseController {
                 
                 if(buildType != null) {
                     
-                    String type = request.getParameter(AutoPropsConstants.SETTING_TYPE);
-                    String var = request.getParameter(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
-                    String pattern = request.getParameter(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+                    HistoryProcessor history = new HistoryProcessor(AutoPropsConstants.CHECK_HISTORY_COUNT);
+                    m_server.getHistory().processEntries(buildType.getInternalId(), null, true, false, true, history);
                     
-                    List<SFinishedBuild> history = buildType.getHistory();
-                    int numBuilds = Math.min(history.size() - 1, 30);
-                    for(int i = 0; i < numBuilds; i++) {
+                    for(SFinishedBuild build : history.getBuilds()) {
                         
-                        SFinishedBuild build = history.get(i);
+                        Map<String, String> requestParams = request.getParameterMap().entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()[0]));
                         
                         Map<String, String> buildParams = build.getParametersProvider().getAll();
-                        SetDecision decision = AutoPropsUtil.testOnBuild(type, var, pattern, buildParams);
+                        Map<String, String> triggeredByParams = build.getTriggeredBy().getParameters();
+                        SetDecision decision = AutoPropsUtil.makeDecision(requestParams, buildParams, triggeredByParams);
                         
                         if(!decision.isValid()) {
                             Element eError = doc.createElement("error");
@@ -144,9 +146,10 @@ public class AutoPropsTest extends BaseController {
                     
                     //resulting properties from the last build
                     Map<String, String> lbParms = null;
-                    List<SFinishedBuild> history = buildType.getHistory();
-                    if(history.size() > 0) {
-                        lbParms = history.get(0).getParametersProvider().getAll();
+                    
+                    SFinishedBuild last = buildType.getLastChangesFinished();
+                    if(last != null) {
+                        lbParms = last.getParametersProvider().getAll();
                     }
                     
                     TreeMap<String, String> found = getMatchingProps(varName, buildType.getParameters(), lbParms);
@@ -156,6 +159,40 @@ public class AutoPropsTest extends BaseController {
                         doc.getFirstChild().appendChild(eVar);
                         eVar.setAttribute("name", kvp.getKey());
                         eVar.setAttribute("display", kvp.getValue());
+                    }
+                }
+                
+                writeXmlToResponse(doc, response);
+                break;
+            }
+            
+            case "listTriggerTypes":
+            {
+                Document doc = makeBaseXml();
+                if(buildType != null) {
+                    
+                    //trigger type names for the last builds
+                    TreeSet<String> types = new TreeSet<String>();
+                    types.add("user");
+                    
+                    HistoryProcessor history = new HistoryProcessor(AutoPropsConstants.CHECK_HISTORY_COUNT);
+                    m_server.getHistory().processEntries(buildType.getInternalId(), null, true, true, true, history);
+                    
+                    for(SFinishedBuild build : history.getBuilds()) {
+                    
+                        TriggeredBy tb = build.getTriggeredBy();
+                        Map<String, String> params = tb.getParameters();
+                        String triggerType = params.get(AutoPropsConstants.AGENT_FLAG_KEY);
+                        
+                        if(triggerType != null) {
+                            types.add(triggerType);
+                        }
+                    }
+                    
+                    for(String type : types) {
+                        Element eVar = doc.createElement("var");
+                        doc.getFirstChild().appendChild(eVar);
+                        eVar.setAttribute("name", type);
                     }
                 }
                 
@@ -229,5 +266,25 @@ public class AutoPropsTest extends BaseController {
         }
         
         return null;
+    }
+    
+    static class HistoryProcessor implements ItemProcessor<SFinishedBuild> {
+        
+        int m_maxCount;
+        List<SFinishedBuild> m_builds = new ArrayList<SFinishedBuild>();
+        
+        public HistoryProcessor(int maxCount) {
+            m_maxCount = maxCount;
+        }
+        
+        @Override
+        public boolean processItem(SFinishedBuild build) {
+            m_builds.add(build);
+            return m_builds.size() < m_maxCount;
+        }
+        
+        public List<SFinishedBuild> getBuilds() {
+            return m_builds;
+        }
     }
 }

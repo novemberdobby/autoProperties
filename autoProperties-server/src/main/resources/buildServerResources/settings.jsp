@@ -11,6 +11,7 @@
 <c:set var="trig_type" value="<%=AutoPropsConstants.SETTING_TYPE%>"/>
 <c:set var="trig_variable" value="<%=AutoPropsConstants.SETTING_CUSTOM_VARIABLE%>"/>
 <c:set var="trig_pattern" value="<%=AutoPropsConstants.SETTING_CUSTOM_PATTERN%>"/>
+<c:set var="trig_type_name" value="<%=AutoPropsConstants.SETTING_TRIGGER_TYPE_NAME%>"/>
 <c:set var="test_url" value="<%=AutoPropsConstants.TESTING_URL%>"/>
 
 <%-- TODO this is probably provided in some other correct way without substringing --%>
@@ -22,11 +23,13 @@
     <props:selectProperty name="${trig_type}" onchange="BS.AutoProps.onTriggerTypeChange()">
       <props:option value="auto" >Automatic trigger</props:option>
       <props:option value="manual">Manual trigger</props:option>
+      <props:option value="trigger_type">By trigger type</props:option>
       <props:option value="custom">Custom</props:option>
     </props:selectProperty>
 
     <span class="smallNote" id="autoprops.type.note.auto">When build is triggered automatically</span>
     <span class="smallNote" id="autoprops.type.note.manual">When build is triggered by a person</span>
+    <span class="smallNote" id="autoprops.type.note.trigger_type">When build is started by a trigger of the specified type (VCS, schedule trigger etc)</span>
     <span class="smallNote" id="autoprops.type.note.custom">When a parameter's value matches a regular expression (on build start)</span>
   </td>
 </tr>
@@ -37,6 +40,15 @@
     <props:textProperty name="${trig_variable}" className="disableBuildTypeParams"/>
     <span class="error" id="error_${trig_variable}"></span>
     <ul id="ac_dropdown" style="display: none; overflow-y:auto; max-height:300px; padding-left: 0px" ></ul>
+  </td>
+</tr>
+
+<tr class="noBorder" id="autoprops.type.trigger_type.name" style="display: none">
+  <th>Trigger type name:</th>
+  <td>
+    <props:textProperty name="${trig_type_name}" className="disableBuildTypeParams"/>
+    <span class="error" id="error_${trig_type_name}"></span>
+    <ul id="tt_dropdown" style="display: none; overflow-y:auto; max-height:300px; padding-left: 0px" ></ul>
   </td>
 </tr>
 
@@ -142,7 +154,7 @@
       var typeElem = $('${trig_type}');
       var typeValue = typeElem.options[typeElem.selectedIndex].value;
       
-      BS.Util.hide('autoprops.type.note.auto', 'autoprops.type.note.manual', 'autoprops.type.note.custom');
+      BS.Util.hide('autoprops.type.note.auto', 'autoprops.type.note.manual', 'autoprops.type.note.trigger_type', 'autoprops.type.note.custom');
       BS.Util.show('autoprops.type.note.' + typeValue);
       
       if(typeValue == "custom")
@@ -152,6 +164,15 @@
       else
       {
         BS.Util.hide('autoprops.type.custom.variable', 'autoprops.type.custom.pattern');
+      }
+      
+      if(typeValue == "trigger_type")
+      {
+        BS.Util.show('autoprops.type.trigger_type.name');
+      }
+      else
+      {
+        BS.Util.hide('autoprops.type.trigger_type.name');
       }
       
       BS.MultilineProperties.updateVisible();
@@ -186,13 +207,21 @@
     },
     
     onTriggerVariableChange: function() {
-      var varElem = $('${trig_variable}');
+      BS.AutoProps.onDropdownChange('${trig_variable}', 'ac_dropdown', 'autoCompleteVar');
+    },
+    
+    onTriggerTypeNameChange: function() {
+      BS.AutoProps.onDropdownChange('${trig_type_name}', 'tt_dropdown', 'listTriggerTypes');
+    },
+    
+    onDropdownChange: function(sVarElemId, sTgtElemId, sAction, clickFunc) {
+      var varElem = $(sVarElemId);
       var varValue = varElem.value;
-      var tgtElem = $('ac_dropdown');
+      var tgtElem = $(sTgtElemId);
       
       BS.ajaxRequest(window['base_uri'] + '${test_url}', {
         method: "GET",
-        parameters: { 'action': 'autoCompleteVar', 'buildTypeId': '${buildTypeId}', 'name': varValue },
+        parameters: { 'action': sAction, 'buildTypeId': '${buildTypeId}', 'name': varValue },
         onComplete: function(transport)
         {
           BS.Util.hide(tgtElem.id);
@@ -206,11 +235,15 @@
               {
                 var sName = props[i].getAttribute("name");
                 var sDisplay = props[i].getAttribute("display");
-                tgtElem.innerHTML += '<li class="listVar" onclick="BS.AutoProps.setVar(\'' + sName + '\')">' + sDisplay + '</li>';
+                if(!sDisplay)
+                {
+                  sDisplay = sName;
+                }
+                tgtElem.innerHTML += '<li class="listVar" onclick="BS.AutoProps.setElem(\'' + sVarElemId + '\',\'' + sName + '\',\'' + sTgtElemId + '\')">' + sDisplay + '</li>';
               }
               
               //don't show the "dropdown" if the only item is what's already in the box
-              if(!(props.length == 1 && props[0].getAttribute("name") == $('${trig_variable}').value))
+              if(!(props.length == 1 && props[0].getAttribute("name") == varElem.value))
               {
                 BS.Util.show(tgtElem.id);
               }
@@ -220,9 +253,9 @@
       });
     },
     
-    setVar: function(sender) {
-      $('${trig_variable}').value = sender;
-      BS.Util.hide('ac_dropdown');
+    setElem: function(sElemId, sVal, sHide) {
+      $(sElemId).value = sVal;
+      BS.Util.hide(sHide);
     },
     
     TestOnBuildDialog: OO.extend(BS.AbstractModalDialog, {
@@ -304,7 +337,8 @@
             'buildTypeId': '${buildTypeId}',
             '${trig_type}': $('${trig_type}').value,
             '${trig_variable}': $('${trig_variable}').value,
-            '${trig_pattern}': $('${trig_pattern}').value
+            '${trig_pattern}': $('${trig_pattern}').value,
+            '${trig_type_name}': $('${trig_type_name}').value
           },
           onComplete: function(transport) {
             BS.Util.hide('getBuildsProgress');
@@ -331,6 +365,8 @@
   $('${params_list}')["onkeyup"] = BS.AutoProps.onParametersChange;
   $('${trig_variable}')["onkeyup"] = BS.AutoProps.onTriggerVariableChange;
   $('${trig_variable}')["onclick"] = BS.AutoProps.onTriggerVariableChange;
+  $('${trig_type_name}')["onkeyup"] = BS.AutoProps.onTriggerTypeNameChange;
+  $('${trig_type_name}')["onclick"] = BS.AutoProps.onTriggerTypeNameChange;
   
   BS.AutoProps.onTriggerTypeChange();
   BS.AutoProps.onParametersChange();
