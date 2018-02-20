@@ -132,7 +132,7 @@
               <tr>
                 <th>Label</th>
                 <th>Status</th>
-                <th id="variableValue"></th>
+                <th id="var_name_column"></th>
               </tr>
             </thead>
           </table>
@@ -310,14 +310,15 @@
             }
           }
           
-          if(showVars)
+          var column_name = transport.responseXML.firstChild.getAttribute("var_name");
+          if(showVars && column_name && column_name.length > 0)
           {
-            BS.Util.show('variableValue');
-            $('variableValue').innerText = '"' + $('${trig_variable}').value + '"';
+            BS.Util.show('var_name_column');
+            $('var_name_column').innerText = column_name;
           }
           else
           {
-            BS.Util.hide('variableValue');
+            BS.Util.hide('var_name_column');
           }
           $('numQualifyBuilds').innerText = total + " of the last " + builds.length + " builds " + (total == 1 ? "qualifies" : "qualify") + ". Key:";
           

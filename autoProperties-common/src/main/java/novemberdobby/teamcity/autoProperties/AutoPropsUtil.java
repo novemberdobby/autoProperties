@@ -73,7 +73,7 @@ public class AutoPropsUtil {
             case "custom":
                 //check for parameter existence
                 if(isEmptyPattern) {
-                    return new SetDecision(param != null);
+                    return new SetDecision(param != null, param);
                 }
                 
                 //we've checked it's valid on set, but just in case...
@@ -101,6 +101,22 @@ public class AutoPropsUtil {
         catch(PatternSyntaxException ex) {
             return false;
         }
+    }
+    
+    public static String getCheckAgainst(Map<String, String> featureParams) {
+        
+        String trigType = featureParams.get(AutoPropsConstants.SETTING_TYPE);
+        String customVar = featureParams.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
+        
+        if(trigType != null) {
+            if(trigType.equals("custom") && customVar != null) {
+                return "Value of \"" + customVar + "\"";
+            } else if(trigType.equals("trigger_type")) {
+                return "Trigger type name";
+            }
+        }
+        
+        return null;
     }
     
     public static List<String> getMissingParameters(Map<String, String> buildTypeParams, String input, String... excludePrefixes) {

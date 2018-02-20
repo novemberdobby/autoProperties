@@ -107,10 +107,16 @@ public class AutoPropsTest extends BaseController {
                     
                     HistoryProcessor history = new HistoryProcessor(AutoPropsConstants.CHECK_HISTORY_COUNT);
                     m_server.getHistory().processEntries(buildType.getInternalId(), null, true, false, true, history);
+                        
+                    Map<String, String> requestParams = request.getParameterMap().entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()[0]));
+                    
+                    String name_column = AutoPropsUtil.getCheckAgainst(requestParams);
+                    if(name_column != null) {
+                        Element root = (Element)doc.getFirstChild();
+                        root.setAttribute("var_name", name_column);
+                    }
                     
                     for(SFinishedBuild build : history.getBuilds()) {
-                        
-                        Map<String, String> requestParams = request.getParameterMap().entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()[0]));
                         
                         Map<String, String> buildParams = build.getParametersProvider().getAll();
                         Map<String, String> triggeredByParams = build.getTriggeredBy().getParameters();

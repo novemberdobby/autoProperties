@@ -15,6 +15,13 @@ Any number of parameters can be given. Spaces are trimmed from both the name and
 As you type, the list will be tested for any target parameters that don't exist:
 ![missing_vars](/images/missing_vars.png)
 
+#### By trigger type
+In this mode, the type of trigger that initiated the build is tested. For example, to set parameters only in builds started by VCS triggers, use 'vcs':
+![by_trigger_type](/images/by_trigger_type.png)
+
+See "Testing" to find out the trigger type name for previous builds (previous names will also be listed when typing in this field).
+Note: the server doesn't currently provide any way to determine exactly which trigger was responsible.
+
 #### Custom
 In this mode, a list of available parameters will appear (this is aggregated from the build config as well as the last completed build, if there is one):
 ![custom_params](/images/custom_params.png)
@@ -26,6 +33,7 @@ The regular expression to match against will be checked on save/test:
 Click "Test on previous builds" to check which builds would qualify to have parameters set (this example is the character '3' in %build.number%):
 ![test_previous](/images/test_previous.png)
 
+For the 'By trigger type' setting, the trigger type name is listed in the rightmost column.
 
 ## Build chains / Dependencies
 When builds are triggered indirectly as part of a dependency chain, they are treated as being triggered in the same way that the "responsible" build was. Use the test functionality to be sure of what will happen in these cases.
