@@ -30,7 +30,7 @@ The regular expression to match against will be checked on save/test:
 ![custom_pattern_error](/images/custom_pattern_error.png)
 
 #### Testing
-Click "Test on previous builds" to check which builds would qualify to have parameters set (this example is the character '3' in %build.number%):
+Click "Test on previous builds" to check which builds would qualify to have parameters set (this example is the character '2' in %build.number%):
 ![test_previous](/images/test_previous.png)
 
 For the 'By trigger type' setting, the trigger type name is listed in the rightmost column.
