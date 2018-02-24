@@ -6,6 +6,7 @@ public class AutoPropsConstants {
     public static final String FEATURE_TYPE_ID = "auto_properties_set";
     public static final String FEATURE_DISPLAY_NAME = "Auto Properties";
     public static final String FEATURE_SETTINGS_JSP = "settings.jsp";
+    public static final String FEATURE_TEST_JSP = "test_results.jsp";
     
     public static final String SETTING_TYPE = "trigger.type";
     public static final String SETTING_TYPE_DEFAULT = "auto";

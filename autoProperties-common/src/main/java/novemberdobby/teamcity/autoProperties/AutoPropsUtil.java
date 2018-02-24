@@ -110,7 +110,7 @@ public class AutoPropsUtil {
         
         if(trigType != null) {
             if(trigType.equals("custom") && customVar != null) {
-                return "Value of \"" + customVar + "\"";
+                return "Value of '" + customVar + "'";
             } else if(trigType.equals("trigger_type")) {
                 return "Trigger type name";
             }

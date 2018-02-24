@@ -30,6 +30,6 @@ public class SetDecision {
     }
     
     public String getMatchedVar() {
-        return m_matchedVar;
+        return m_matchedVar == null ? "" : m_matchedVar;
     }
 }

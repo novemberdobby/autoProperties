@@ -65,8 +65,6 @@ public class AutoPropsTest extends BaseController {
     @Override
     protected ModelAndView doHandle(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response) throws Exception {
         
-        ServletOutputStream stream = response.getOutputStream();
-        
         String operation = request.getParameter("action");
         SUser user = SessionUser.getUser(request);
         if(user == null || operation == null) {
@@ -93,6 +91,7 @@ public class AutoPropsTest extends BaseController {
                         List<String> missing = AutoPropsUtil.getMissingParameters(btParams, props, Constants.ENV_PREFIX);
                         
                         //parameter names can't contain newlines, so use them as a delimiter
+                        ServletOutputStream stream = response.getOutputStream();
                         stream.print(String.join("\n", missing));
                     }
                 }
@@ -101,19 +100,21 @@ public class AutoPropsTest extends BaseController {
                 
             case "checkBuilds":
             {
-                Document doc = makeBaseXml();
+                ModelAndView mv = new ModelAndView(m_descriptor.getPluginResourcesPath(AutoPropsConstants.FEATURE_TEST_JSP));
+                Map<String, Object> model = mv.getModel();
+                List<AutoPropsBuildHelper> testResults = new ArrayList<AutoPropsBuildHelper>();
+                int qual = 0;
                 
                 if(buildType != null) {
                     
                     HistoryProcessor history = new HistoryProcessor(AutoPropsConstants.CHECK_HISTORY_COUNT);
                     m_server.getHistory().processEntries(buildType.getInternalId(), null, true, false, true, history);
-                        
+                    
                     Map<String, String> requestParams = request.getParameterMap().entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()[0]));
                     
                     String name_column = AutoPropsUtil.getCheckAgainst(requestParams);
                     if(name_column != null) {
-                        Element root = (Element)doc.getFirstChild();
-                        root.setAttribute("var_name", name_column);
+                        model.put("extra_column_name", name_column);
                     }
                     
                     for(SFinishedBuild build : history.getBuilds()) {
@@ -123,24 +124,21 @@ public class AutoPropsTest extends BaseController {
                         SetDecision decision = AutoPropsUtil.makeDecision(requestParams, buildParams, triggeredByParams);
                         
                         if(!decision.isValid()) {
-                            Element eError = doc.createElement("error");
-                            doc.getFirstChild().appendChild(eError);
-                            break;
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+                            return null;
                         }
                         
-                        Element eBuild = doc.createElement("build");
-                        doc.getFirstChild().appendChild(eBuild);
-                        
-                        eBuild.setAttribute("number", build.getBuildNumber());
-                        eBuild.setAttribute("id", Long.toString(build.getBuildId()));
-                        eBuild.setAttribute("status", build.getStatusDescriptor().getText());
-                        eBuild.setAttribute("set", Boolean.toString(decision.getSet()));
-                        eBuild.setAttribute("var", decision.getMatchedVar() == null ? "" : decision.getMatchedVar());
+                        testResults.add(new AutoPropsBuildHelper(build, decision.getSet(), decision.getMatchedVar()));
+                        if(decision.getSet()) {
+                            qual++;
+                        }
                     }
                 }
                 
-                writeXmlToResponse(doc, response);
-                break;
+                
+                model.put("info", String.format("%d of the last %d builds %s. Key:", qual, testResults.size(), qual == 1 ? "qualifies" : "qualify"));
+                model.put("builds", testResults);
+                return mv;
             }
                 
             case "autoCompleteVar":

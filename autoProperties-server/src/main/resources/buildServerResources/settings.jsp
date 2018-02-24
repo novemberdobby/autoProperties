@@ -83,31 +83,18 @@
 <style type="text/css">
 #testOnBuildResults tbody tr td, #testOnBuildResultsKey tbody tr td {
   border: 1px solid #ccc;
-  max-width: 700px;
+  max-width: 900px;
   overflow-wrap: break-word;
-}
-
-#testOnBuildResults th {
-  border: 1px solid #ccc;
-  padding: 3px;
-  background: #f5f5f5;
-  text-align: left;
-}
-
-.qualify {
-  background: #ceffbf;
-  padding: 3px;
-}
-
-.noqualify {
-  background: #ececec;
-  padding: 3px;
 }
 
 .listVar {
   line-height: 200%;
   color: cornflowerblue;
   cursor: pointer;
+}
+
+.wideDialog {
+  width: 60em;
 }
 </style>
 
@@ -116,31 +103,10 @@
     <forms:button id="openTestDialogBtn" onclick="BS.AutoProps.openTestDialog()" className="btn">Test on previous builds</forms:button>
     <forms:saving id="getBuildsProgress"/>
     
-    <bs:dialog dialogId="testOnBuildDialog" title="Previous builds" closeCommand="BS.AutoProps.TestOnBuildDialog.close()">
-      <div id="testOnBuildResultsDiv">
-        <span id="numQualifyBuilds"></span>
-        <table id="testOnBuildResultsKey" cellpadding="4">
-          <tbody>
-            <tr><td class="qualify">Build qualifies</td></tr>
-            <tr><td class="noqualify">Build doesn't qualify</td></tr>
-          </tbody>
-        </table>
-        <br/>
-        <div style="overflow-y:auto; height:400px">
-          <table id="testOnBuildResults" cellpadding="4">
-            <thead>
-              <tr>
-                <th>Label</th>
-                <th>Status</th>
-                <th id="var_name_column"></th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </div>
+    <bs:dialog dialogId="testOnBuildDialog" dialogClass="wideDialog" title="Previous builds" closeCommand="BS.AutoProps.TestOnBuildDialog.close()">
+      <div id="testOnBuildResults" style="overflow-y:auto; height:400px"></div>
       <div class="popupSaveButtonsBlock">
         <forms:cancel label="Close" onclick="BS.AutoProps.TestOnBuildDialog.close()"/>
-        <forms:saving id="testProgress"/>
       </div>
     </bs:dialog>
   </td>
@@ -263,67 +229,8 @@
         return $('testOnBuildDialog');
       },
       
-      beforeShow: function() {
-        $('testOnBuildDialog').style.width = "900px";
-      },
-      
       init: function(transport) {
-        var builds = transport.responseXML.firstChild.getElementsByTagName("build");
-        if (builds && builds.length > 0) {
-          
-          var body = $('testOnBuildResults').lastChild;
-          var newBody = document.createElement('tbody');
-          var total = 0;
-          var showVars = false;
-          
-          for (var i = 0; i < builds.length; i++) {
-            var row = document.createElement("tr");
-            newBody.appendChild(row);
-            
-            var bId = builds[i].getAttribute("id");
-            var bNumber = builds[i].getAttribute("number");
-            var dNumber = document.createElement("td");
-            dNumber.innerHTML = "<a href='/viewLog.html?buildId=" + bId + "'>" + bNumber + "</a>";
-            row.appendChild(dNumber);
-            
-            var bStatus = builds[i].getAttribute("status");
-            var dStatus = document.createElement("td");
-            dStatus.appendChild(document.createTextNode(bStatus));
-            row.appendChild(dStatus);
-            
-            if(builds[i].getAttribute("set") == "false")
-            {
-              row.className = "noqualify";
-            }
-            else
-            {
-              row.className = "qualify";
-              total++;
-            }
-            
-            var bValue = builds[i].getAttribute("var");
-            if(bValue && bValue.length > 0) {
-              var dValue = document.createElement("td");
-              dValue.appendChild(document.createTextNode(bValue));
-              row.appendChild(dValue);
-              showVars = true;
-            }
-          }
-          
-          var column_name = transport.responseXML.firstChild.getAttribute("var_name");
-          if(showVars && column_name && column_name.length > 0)
-          {
-            BS.Util.show('var_name_column');
-            $('var_name_column').innerText = column_name;
-          }
-          else
-          {
-            BS.Util.hide('var_name_column');
-          }
-          $('numQualifyBuilds').innerText = total + " of the last " + builds.length + " builds " + (total == 1 ? "qualifies" : "qualify") + ". Key:";
-          
-          body.parentNode.replaceChild(newBody, body);
-        }
+        $('testOnBuildResults').innerHTML = transport.responseText;
       },
     }),
     
@@ -343,18 +250,17 @@
           },
           onComplete: function(transport) {
             BS.Util.hide('getBuildsProgress');
-            if(transport && transport.status == 200)
+            if(transport)
             {
-              var error = transport.responseXML.firstChild.getElementsByTagName("error");
-              if(error && error.length > 0)
-              {
-                //prompt a save so the error is shown, there's probably a better way ¯\_(ツ)_/¯
-                $('submitBuildFeatureId').click();
-              }
-              else
+              if(transport.status == 200)
               {
                 BS.AutoProps.TestOnBuildDialog.init(transport);
                 BS.AutoProps.TestOnBuildDialog.showCentered();
+              }
+              else if(transport.status == 400) //SC_BAD_REQUEST
+              {
+                //prompt a save so the error is shown, there's probably a better way ¯\_(ツ)_/¯
+                $('submitBuildFeatureId').click();
               }
             }
           }
