@@ -30,7 +30,7 @@ public class AutoPropsUtil {
                     String key = param.substring(0, ind).trim();
                     String value = param.substring(ind + mark.length(), param.length()).trim();
                     
-                    if(key.length() > 0 && value.length() > 0) {
+                    if(key.length() > 0) {
                         result.put(key, value);
                     }
                 }

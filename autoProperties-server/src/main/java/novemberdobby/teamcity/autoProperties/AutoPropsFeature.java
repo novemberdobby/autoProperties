@@ -80,8 +80,9 @@ public class AutoPropsFeature extends BuildFeature {
         for(Entry<String, String> var : toSet.entrySet()) {
             sb.append("<br>");
             sb.append(HtmlUtils.htmlEscape(var.getKey()));
-            sb.append(HtmlUtils.htmlEscape(" => "));
+            sb.append(HtmlUtils.htmlEscape(" => \""));
             sb.append(HtmlUtils.htmlEscape(var.getValue()));
+            sb.append(HtmlUtils.htmlEscape("\""));
         }
         
         return String.format("Set %d parameter%s on %s%s", toSet.size(), toSet.size() == 1 ? "" : "s", typeStr, sb.toString());
