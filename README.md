@@ -9,6 +9,7 @@ AutoProperties came about as a partial solution to [TW-6439 - Set custom paramet
 Add the feature to any build config or template:
 ![auto](/images/auto.png)
 ![manual](/images/manual.png)
+
 Any number of parameters can be given. Spaces are trimmed from both the name and value.
 
 #### Missing parameters
