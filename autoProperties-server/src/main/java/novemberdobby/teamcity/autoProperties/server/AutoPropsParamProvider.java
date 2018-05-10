@@ -49,6 +49,6 @@ public class AutoPropsParamProvider
     
     @Override
     public boolean isVisible(String paramName) {
-        return paramName.equals(AutoPropsConstants.AGENT_FLAG_VAR_NAME);
+        return true;
     }
 }
