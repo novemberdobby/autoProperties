@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -12,7 +11,6 @@ import java.util.TreeSet;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.HtmlUtils;
 
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -37,7 +35,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -149,14 +146,14 @@ public class AutoPropsTest extends BaseController {
                 if(varName != null && buildType != null) {
                     
                     //resulting properties from the last build
-                    Map<String, String> lbParms = null;
+                    Map<String, String> lbParms = buildType.getParameters();
                     
                     SFinishedBuild last = buildType.getLastChangesFinished();
                     if(last != null) {
-                        lbParms = last.getParametersProvider().getAll();
+                        lbParms.putAll(last.getParametersProvider().getAll());
                     }
-                    
-                    TreeMap<String, String> found = getMatchingProps(varName, buildType.getParameters(), lbParms);
+
+                    TreeMap<String, String> found = getMatchingProps(varName, lbParms);
                     
                     for(Entry<String, String> kvp : found.entrySet()) {
                         Element eVar = doc.createElement("var");
@@ -227,29 +224,25 @@ public class AutoPropsTest extends BaseController {
         response.getOutputStream().print(out.toString());
     }
     
-    private TreeMap<String, String> getMatchingProps(String search, Map<String, String>... params) {
+    private TreeMap<String, String> getMatchingProps(String search, Map<String, String> params) {
         
         TreeMap<String, String> result = new TreeMap<String, String>();
         String find = search.toLowerCase();
-        
-        for(Map<String, String> map : params) {
-            if(map != null) {
-                for(Entry<String, String> param : map.entrySet()) {
-                    String key = param.getKey();
-                    String keyLow = key.toLowerCase();
-                    Integer len = find.length();
-                    
-                    Integer index = len == 0 ? 0 : keyLow.indexOf(find);
-                    if(!result.containsKey(key) && index != -1) {
-                        
-                        String name   = HtmlUtils.htmlEscape(key);
-                        String start  = HtmlUtils.htmlEscape(key.substring(0, index));
-                        String middle = HtmlUtils.htmlEscape(key.substring(index, index + len));
-                        String end    = HtmlUtils.htmlEscape(key.substring(index + len));
-                        
-                        result.put(name, start + "<b>" + middle + "</b>" + end);
-                    }
-                }
+
+        for(Entry<String, String> param : params.entrySet()) {
+            String key = param.getKey();
+            String keyLow = key.toLowerCase();
+            Integer len = find.length();
+            
+            Integer index = len == 0 ? 0 : keyLow.indexOf(find);
+            if(!result.containsKey(key) && index != -1) {
+                
+                String name   = HtmlUtils.htmlEscape(key);
+                String start  = HtmlUtils.htmlEscape(key.substring(0, index));
+                String middle = HtmlUtils.htmlEscape(key.substring(index, index + len));
+                String end    = HtmlUtils.htmlEscape(key.substring(index + len));
+                
+                result.put(name, start + "<b>" + middle + "</b>" + end);
             }
         }
         

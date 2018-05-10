@@ -11,9 +11,7 @@ import jetbrains.buildServer.agent.AgentLifeCycleListener;
 import jetbrains.buildServer.agent.AgentRunningBuild;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.Constants;
-import jetbrains.buildServer.parameters.ValueResolver;
 import jetbrains.buildServer.util.EventDispatcher;
-import jetbrains.buildServer.messages.DefaultMessagesInfo;
 
 import org.jetbrains.annotations.NotNull;
 

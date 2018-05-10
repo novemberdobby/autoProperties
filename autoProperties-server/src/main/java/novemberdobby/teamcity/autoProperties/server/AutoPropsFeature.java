@@ -13,7 +13,6 @@ import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.log.Loggers;
 
 import novemberdobby.teamcity.autoProperties.common.AutoPropsConstants;
 import novemberdobby.teamcity.autoProperties.common.AutoPropsUtil;
@@ -135,7 +134,7 @@ public class AutoPropsFeature extends BuildFeature {
                 
                 //invalid regex
                 try {
-                    Pattern compiled = Pattern.compile(varPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
+                    Pattern.compile(varPattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
                 }
                 catch(PatternSyntaxException ex) {
                     result.add(new InvalidProperty(AutoPropsConstants.SETTING_CUSTOM_PATTERN, ex.getMessage().toString()));

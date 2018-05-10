@@ -95,7 +95,7 @@ public class AutoPropsUtil {
     
     public static boolean isValidRegex(String pattern) {
         try {
-            Pattern ptn = Pattern.compile(pattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
+            Pattern.compile(pattern, AutoPropsConstants.CUSTOM_PATTERN_OPTIONS);
             return true;
         }
         catch(PatternSyntaxException ex) {
