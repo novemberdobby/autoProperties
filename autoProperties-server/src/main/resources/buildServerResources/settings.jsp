@@ -69,6 +69,7 @@
   <td>
     <c:set var="text">Newline delimited list of <strong>name => value</strong> parameters to set<br/></c:set>
     <props:multilineProperty name="${params_list}" rows="5" cols="70" linkTitle="" expanded="true" note="${text}"/>
+    <br>
     <div id="autoprops.params.missing" style="display: none" class="headerNote">
       <span class="smallNote" >The following target parameters don't exist in this build type:</span>
       <span class="smallNote" id="autoprops.params.missing.list" style="color:#ff0000; white-space: pre"></span>
