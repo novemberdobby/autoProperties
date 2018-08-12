@@ -28,3 +28,5 @@ autoProperties-server/\.settings/org\.eclipse\.jdt\.core\.prefs
 autoProperties-server/\.settings/org\.eclipse\.m2e\.core\.prefs
 
 build/\.settings/org\.eclipse\.m2e\.core\.prefs
+
+\.vscode/tasks\.json

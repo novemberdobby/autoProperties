@@ -62,10 +62,16 @@ public class AutoPropsFeature extends BuildFeature {
                 
             case "custom":
                 String varName = params.get(AutoPropsConstants.SETTING_CUSTOM_VARIABLE);
-                String varMatch = params.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+                String varMatchStr = params.get(AutoPropsConstants.SETTING_CUSTOM_PATTERN);
+
+                if(varMatchStr != null) {
+                    varMatchStr = "matches: " + varMatchStr;
+                } else {
+                    varMatchStr = "exists";
+                }
                 
                 //let's not allow people to inject HTML =]
-                typeStr = HtmlUtils.htmlEscape(String.format("builds when parameter \"%s\" matches: %s", varName, varMatch));
+                typeStr = HtmlUtils.htmlEscape(String.format("builds when parameter \"%s\" %s", varName, varMatchStr));
                 break;
                 
             case "trigger_type":

@@ -41,7 +41,7 @@
     </tr>
   </thead>
   <c:forEach items="${builds}" var="build">
-    <tr>
+    <tr class="highlightRow ${build.getSet() ? 'qualify' : 'noqualify'}">
       <bs:buildRow
           build="${build.getBuild()}"
           showBuildNumber="true"
@@ -50,11 +50,10 @@
           showChanges="true"
           showStartDate="true"
           showAgent="true"
-          rowClass="${build.getSet() ? 'qualify' : 'noqualify'}"
       />
       
       <c:if test='${not empty extra_column_name}'>
-        <td class="${build.getSet() ? 'qualify' : 'noqualify'}">${build.getVarName()}</td>
+        <td>${build.getVarName()}</td>
       </c:if>
     </tr>
     
