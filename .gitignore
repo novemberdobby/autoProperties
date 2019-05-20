@@ -30,3 +30,11 @@ autoProperties-server/\.settings/org\.eclipse\.m2e\.core\.prefs
 build/\.settings/org\.eclipse\.m2e\.core\.prefs
 
 \.vscode/tasks\.json
+
+autoProperties-common/\.settings/
+
+autoProperties-agent/\.settings/
+
+autoProperties-server/\.settings/org\.eclipse\.jdt\.apt\.core\.prefs
+
+vs_code\.code-workspace

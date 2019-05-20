@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.springframework.web.util.HtmlUtils;
 
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.InvalidProperty;
@@ -70,24 +69,23 @@ public class AutoPropsFeature extends BuildFeature {
                     varMatchStr = "exists";
                 }
                 
-                //let's not allow people to inject HTML =]
-                typeStr = HtmlUtils.htmlEscape(String.format("builds when parameter \"%s\" %s", varName, varMatchStr));
+                typeStr = String.format("builds when parameter \"%s\" %s", varName, varMatchStr);
                 break;
                 
             case "trigger_type":
                 String trigTypeName = params.get(AutoPropsConstants.SETTING_TRIGGER_TYPE_NAME);
-                typeStr = String.format("builds initiated by '%s' trigger", HtmlUtils.htmlEscape(trigTypeName));
+                typeStr = String.format("builds initiated by '%s' trigger", trigTypeName);
                 break;
         }
         
         Map<String, String> toSet = AutoPropsUtil.getParameters(params);
         StringBuilder sb = new StringBuilder();
         for(Entry<String, String> var : toSet.entrySet()) {
-            sb.append("<br>");
-            sb.append(HtmlUtils.htmlEscape(var.getKey()));
-            sb.append(HtmlUtils.htmlEscape(" => \""));
-            sb.append(HtmlUtils.htmlEscape(var.getValue()));
-            sb.append(HtmlUtils.htmlEscape("\""));
+            sb.append("\r\n");
+            sb.append(var.getKey());
+            sb.append(" => \"");
+            sb.append(var.getValue());
+            sb.append("\"");
         }
         
         return String.format("Set %d parameter%s on %s%s", toSet.size(), toSet.size() == 1 ? "" : "s", typeStr, sb.toString());
