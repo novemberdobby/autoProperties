@@ -1,3 +1,7 @@
+## Note
+
+Superseded by artifact options in 2021.1+: https://blog.jetbrains.com/teamcity/2021/05/teamcity-2021-1-kotlin-and-node-js-build-runners-trigger-defined-parameters-high-availability-and-more/
+
 # AutoProperties - TeamCity plugin to set parameters based on how a build was triggered
 AutoProperties provides a build feature that can set parameters based on whether or not the build was triggered by a person. It can also set different parameters depending on those that exist already. For example, you might want to change behaviour based on the amount of system memory available to an agent (*teamcity.agent.hardware.memorySizeMb*).
 
